@@ -33,8 +33,8 @@ describe MatchDefinition do
     end
     it 'in string format "# name/game/hands/seed ..."' do
       init_components do
-        string = "# name/game/hands/seed #{@name} #{@game_def_file_name} #{@number_of_hands} #{@random_seed}"
-        @patient = MatchDefinition.parse(string, @player_names)
+        string = "# name/game/hands/seed #{@name} #{@game_def_file_name} #{@number_of_hands} #{@random_seed}\n"
+        @patient = MatchDefinition.parse(string, @player_names, File.dirname(@game_def_file_name))
         
         check_patient
       end
@@ -42,7 +42,7 @@ describe MatchDefinition do
   end
   it 'raises an exception if initialized with an improperly formatted string' do
     string = 'improperly formatted string'
-    (->() { @patient = MatchDefinition.parse(string, ['p1', 'p2']) }).must_raise MatchDefinition::UnableToParse
+    (->() { @patient = MatchDefinition.parse(string, ['p1', 'p2'], 'game def directory') }).must_raise MatchDefinition::UnableToParse
   end
 
   def init_components

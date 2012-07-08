@@ -8,7 +8,7 @@ class HandResults
   attr_reader :data, :final_score
 
   def self.parse_state(state_string)
-    if state_string.match(
+    if state_string.strip.match(
       /^STATE:\d+:[cfr\d\/]+:[^:]+:([\d\-\.|]+):([\w|]+)$/
       )
        
@@ -16,7 +16,7 @@ class HandResults
       players = $2.split '|'
          
       players.each_index.inject({}) do |player_results, j|
-         player_results[players[j]] = stack_changes[j].to_r
+         player_results[players[j].to_sym] = stack_changes[j].to_r
          player_results
       end
     else
@@ -25,7 +25,7 @@ class HandResults
   end
 
   def self.parse_score(score_string)
-    if score_string.match(
+    if score_string.strip.match(
       /^SCORE:([\d\-\.|]+):([\w|]+)$/
       )
        
@@ -33,7 +33,7 @@ class HandResults
       players = $2.split '|'
          
       players.each_index.inject({}) do |player_results, j|
-         player_results[players[j]] = stack_changes[j].to_r
+         player_results[players[j].to_sym] = stack_changes[j].to_r
          player_results
       end
     else
@@ -52,9 +52,12 @@ class HandResults
   def initialize(acpc_log_statements)
     @data = acpc_log_statements.inject([]) do |accumulating_data, log_line|
       begin
-        accumulating_data << HandResults.parse_state(log_line)
-      rescue UnableToParseState
-        @final_score = HandResults.parse_score(log_line)
+        begin
+          accumulating_data << HandResults.parse_state(log_line)
+        rescue UnableToParseState
+          @final_score = HandResults.parse_score(log_line)
+        end
+      rescue UnableToParseScore # Skip lines that neither parse method understand
       end
 
       accumulating_data
