@@ -2,6 +2,8 @@
 # Spec helper (must include first to track code coverage with SimpleCov)
 require File.expand_path('../support/spec_helper', __FILE__)
 
+require 'mocha'
+
 require File.expand_path('../../lib/acpc_dealer_data/hand_results', __FILE__)
 
 describe HandResults do
@@ -32,15 +34,37 @@ describe HandResults do
       (->() { HandResults.parse_state("improperly formatted string") }).must_raise HandResults::UnableToParseState
     end
   end
+  describe '::parse_score' do
+    it 'properly parses a ACPC log "SCORE. . ." line' do
+      [
+        'SCORE:100|-100:p1|p2' => {'p1' => 100, 'p2' => -100},
+        'SCORE:19835|621.5|-20455.5:p1|p2|p3' => {'p1' => 19835, 'p2' => 621.5, 'p3' => -20455.5}
+      ].each do |score_to_player_results|
+        score_to_player_results.each do |score_string, expected_values|
+          HandResults.parse_score(score_string).must_equal expected_values
+        end
+      end
+    end
+    it 'raises an exception if provided an improperly formatted string' do
+      (->() { HandResults.parse_score("improperly formatted string") }).must_raise HandResults::UnableToParseScore
+    end
+  end
 
   describe 'properly parses ACPC log statements' do
     it 'from file' do
-      skip
+      init_data do |log_statements|
+        file_name = 'file_name'
+        File.stubs(:open).with(file_name, 'r').yields(
+          log_statements
+        ).returns(HandResults.parse(log_statements))
+
+        @patient = HandResults.parse_file file_name
+
+        check_patient
+      end
     end
     it 'from array' do
       init_data do |log_statements|
-        puts "log_statements: #{log_statements}"
-
         @patient = HandResults.parse log_statements
 
         check_patient
@@ -50,8 +74,6 @@ describe HandResults do
 
   def init_data
     all_data.each do |game, data_hash|
-      puts "data_hash: #{data_hash.inspect}"
-
       @final_score = data_hash[:final_score]
       @data = data_hash[:data]        
         
@@ -136,7 +158,7 @@ describe HandResults do
           {'p1' => -150, 'p2' => 210, 'p3' => -60},
           {'p1' => 100, 'p2' => 0, 'p3' => -100},
           {'p1' => -70, 'p2' => 100, 'p3' => -30},
-          {'p1' => -130, 'p2' => 190, 'p3' => -130},
+          {'p1' => -60, 'p2' => 190, 'p3' => -130},
           {'p1' => -100, 'p2' => 140, 'p3' => -40},
           {'p1' => 95, 'p2' => 95, 'p3' => -190},
           {'p1' => 150, 'p2' => -40, 'p3' => -110},
@@ -157,7 +179,7 @@ describe HandResults do
           'STATE:7:ccr8533r17298r20000cc///:Qd2s|KdTs|6dQh/6h6sTc/3h/Jd:-20000|-20000|40000:p2|p3|p1',
           'STATE:8:cr18231r20000cc///:6hKc|6cAd|6d2c/QdTd9h/7h/Jc:40000|-20000|-20000:p3|p1|p2',
           'STATE:9:ccr12926r20000cc///:QsAs|3s8h|Qd3c/4d6d2d/5d/2c:-20000|-20000|40000:p1|p2|p3',
-          'SCORE:684452|552584.5|-1237036.5:p1|p2|p3'
+          'SCORE:19835|621|-20456:p1|p2|p3'
         ],
         data: [
           {'p1' => 40000, 'p2' => -20000, 'p3' => -20000},
