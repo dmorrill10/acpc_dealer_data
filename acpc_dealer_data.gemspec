@@ -8,6 +8,10 @@ Gem::Specification.new do |gem|
   gem.summary       = %q{TODO: Write a gem summary}
   gem.homepage      = ""
 
+  gem.add_dependency 'acpc_dealer'
+  gem.add_dependency 'acpc_poker_types'
+  gem.add_dependency 'dmorrill10-utils', '~>0.0.5'
+
   gem.files         = `git ls-files`.split($\)
   gem.executables   = gem.files.grep(%r{^bin/}).map{ |f| File.basename(f) }
   gem.test_files    = gem.files.grep(%r{^(test|spec|features)/})
