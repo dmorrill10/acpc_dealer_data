@@ -2,17 +2,19 @@
 require File.expand_path('../lib/acpc_dealer_data/version', __FILE__)
 
 Gem::Specification.new do |gem|
-  gem.authors       = ["Dustin"]
+  gem.authors       = ["Dustin Morrill"]
   gem.email         = ["morrill@ualberta.ca"]
-  gem.description   = %q{TODO: Write a gem description}
-  gem.summary       = %q{TODO: Write a gem summary}
-  gem.homepage      = ""
+  gem.description   = %q{ACPC Dealer data}
+  gem.summary       = %q{Gem to parse, manipulate, and use data from the ACPC Dealer program.}
+  gem.homepage      = "https://github.com/dmorrill10/acpc_dealer_data"
 
   gem.add_dependency 'acpc_dealer'
   gem.add_dependency 'acpc_poker_types'
   gem.add_dependency 'dmorrill10-utils', '~>0.0.5'
 
   gem.add_development_dependency 'mocha'
+  gem.add_development_dependency 'simplecov'
+  gem.add_development_dependency 'turn'
 
   gem.files         = `git ls-files`.split($\)
   gem.executables   = gem.files.grep(%r{^bin/}).map{ |f| File.basename(f) }
