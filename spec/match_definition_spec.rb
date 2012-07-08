@@ -42,7 +42,7 @@ describe MatchDefinition do
   end
   it 'raises an exception if initialized with an improperly formatted string' do
     string = 'improperly formatted string'
-    (->() { @patient = MatchDefinition.parse(string, ['p1', 'p2']) }).must_raise MatchDefinition::UnableToParseString
+    (->() { @patient = MatchDefinition.parse(string, ['p1', 'p2']) }).must_raise MatchDefinition::UnableToParse
   end
 
   def init_components
