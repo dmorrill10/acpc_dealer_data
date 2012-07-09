@@ -21,6 +21,9 @@ describe HandData do
     @turn_number = nil
     @seat = nil
     @turn_data = nil
+    @next_action = nil
+    @last_action = nil
+    @final_turn = nil
   end
 
   describe 'raises an exception' do
@@ -63,12 +66,20 @@ describe HandData do
         @last_match_state = nil
         @current_match_state = nil
 
+        @last_action = nil
+        @next_action = nil
+
         @patient = HandData.new(@match_def, action_data, result)
 
         @turn_number = 0
-        @patient.for_every_turn!(@seat) do 
+        @patient.for_every_turn!(@seat) do
+          @final_turn = @turn_data.length <= @turn_number
+
           @last_match_state = @current_match_state
           @current_match_state = @turn_data[@turn_number].state_messages[@seat]
+
+          @last_action = @next_action
+          @next_action = @turn_data[@turn_number].action_message
 
           check_patient
 
@@ -86,6 +97,9 @@ describe HandData do
     @patient.seat.must_equal @seat
     @patient.current_match_state.must_equal @current_match_state
     @patient.last_match_state.must_equal @last_match_state
+    @patient.next_action.must_equal @next_action
+    @patient.last_action.must_equal @last_action
+    @patient.final_turn?.must_equal @final_turn
   end
 
   def init_data
