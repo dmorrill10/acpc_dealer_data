@@ -17,6 +17,30 @@ describe MatchDefinition do
     @patient = nil
   end
 
+  it 'raises an exception if the number of player names does not match the number of players' do
+    init_components do
+      ->() do
+        @patient = MatchDefinition.new(
+          @name, 
+          @game_def, 
+          @number_of_hands, 
+          @random_seed, 
+          @player_names + ['extra player']
+        )
+      end.must_raise MatchDefinition::IncorrectNumberOfPlayerNames
+
+      ->() do
+        @patient = MatchDefinition.new(
+          @name, 
+          @game_def, 
+          @number_of_hands, 
+          @random_seed, 
+          [@player_names.first]
+        )
+      end.must_raise MatchDefinition::IncorrectNumberOfPlayerNames
+    end
+  end
+
   describe 'can be created by providing components' do
     it 'separately' do
       init_components do

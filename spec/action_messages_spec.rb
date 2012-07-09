@@ -1,13 +1,13 @@
 
 # Spec helper (must include first to track code coverage with SimpleCov)
-require File.expand_path('../support/spec_helper', __FILE__)
+require_relative 'support/spec_helper'
 
 require 'mocha'
 
 require 'acpc_poker_types/match_state'
 require 'acpc_poker_types/poker_action'
 
-require File.expand_path('../../lib/acpc_dealer_data/action_messages', __FILE__)
+require_relative '../lib/acpc_dealer_data/action_messages'
 
 describe ActionMessages do
   before do

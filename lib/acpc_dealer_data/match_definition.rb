@@ -5,7 +5,7 @@ require 'dmorrill10-utils/class'
 
 class MatchDefinition
 
-  exceptions :unable_to_parse
+  exceptions :unable_to_parse, :incorrect_number_of_player_names
 
   attr_reader :name, :game_def, :number_of_hands, :random_seed, :player_names
 
@@ -31,10 +31,16 @@ class MatchDefinition
   end
 
   def initialize(name, game_def, number_of_hands, random_seed, player_names)
+    if game_def.number_of_players != player_names.length
+      raise IncorrectNumberOfPlayerNames, "number of players: #{game_def.number_of_players}, number of names: #{player_names.length}"
+    end
+
     @name = name.to_s
     @game_def = game_def
     @number_of_hands = number_of_hands.to_i
     @random_seed = random_seed.to_i
     @player_names = player_names
+
+
   end
 end
