@@ -33,8 +33,8 @@ describe ActionMessages do
         end
       end
     end
-    it 'raises an exception if provided an improperly formatted string' do
-      (->() { ActionMessages.parse_to_message("improperly formatted string") }).must_raise ActionMessages::UnableToParseToMessage
+    it 'returns nil if asked to parse an improperly formatted string' do
+      ActionMessages.parse_to_message("improperly formatted string").must_be_nil
     end
   end
 
@@ -71,8 +71,8 @@ describe ActionMessages do
         end
       end
     end
-    it 'raises an exception if provided an improperly formatted string' do
-      (->() { ActionMessages.parse_from_message("improperly formatted string") }).must_raise ActionMessages::UnableToParseFromMessage
+    it 'returns nil if asked to parse an improperly formatted string' do
+      ActionMessages.parse_from_message("improperly formatted string").must_be_nil
     end
   end
 
@@ -87,8 +87,8 @@ describe ActionMessages do
         end
       end
     end
-    it 'raises an exception if provided an improperly formatted string' do
-      (->() { ActionMessages.parse_score("improperly formatted string") }).must_raise ActionMessages::UnableToParseScore
+    it 'returns nil if asked to parse an improperly formatted string' do
+      ActionMessages.parse_score("improperly formatted string").must_be_nil
     end
   end
 

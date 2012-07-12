@@ -30,8 +30,8 @@ describe HandResults do
         end
       end
     end
-    it 'raises an exception if provided an improperly formatted string' do
-      (->() { HandResults.parse_state("improperly formatted string") }).must_raise HandResults::UnableToParseState
+    it 'returns nil if asked to parse an improperly formatted string' do
+      HandResults.parse_state("improperly formatted string").must_be_nil
     end
   end
   describe '::parse_score' do
@@ -45,8 +45,8 @@ describe HandResults do
         end
       end
     end
-    it 'raises an exception if provided an improperly formatted string' do
-      (->() { HandResults.parse_score("improperly formatted string") }).must_raise HandResults::UnableToParseScore
+    it 'returns nil if asked to parse an improperly formatted string' do
+      HandResults.parse_score("improperly formatted string").must_be_nil
     end
   end
 

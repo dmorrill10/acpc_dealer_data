@@ -3,8 +3,6 @@ require 'dmorrill10-utils/class'
 
 class HandResults
 
-  exceptions :unable_to_parse_state, :unable_to_parse_score
-
   attr_reader :data, :final_score
 
   def self.parse_state(state_string)
@@ -20,7 +18,7 @@ class HandResults
          player_results
       end
     else
-      raise UnableToParseState, state_string
+      nil
     end
   end
 
@@ -37,7 +35,7 @@ class HandResults
          player_results
       end
     else
-      raise UnableToParseScore, score_string
+      nil
     end
   end
 
@@ -51,15 +49,13 @@ class HandResults
 
   def initialize(acpc_log_statements)
     @data = acpc_log_statements.inject([]) do |accumulating_data, log_line|
-      begin
-        begin
-          accumulating_data << HandResults.parse_state(log_line)
-        rescue UnableToParseState
-          @final_score = HandResults.parse_score(log_line)
-        end
-      rescue UnableToParseScore # Skip lines that neither parse method understand
+      parsed_message = HandResults.parse_state(log_line)
+      if parsed_message
+        accumulating_data << parsed_message
+      else
+        @final_score = HandResults.parse_score(log_line) unless @final_score
       end
-
+      
       accumulating_data
     end
   end

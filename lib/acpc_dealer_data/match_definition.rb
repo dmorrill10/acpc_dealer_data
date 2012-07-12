@@ -26,7 +26,7 @@ class MatchDefinition
         player_names
       )
     else
-      raise UnableToParse, acpc_log_string
+      nil
     end
   end
 
@@ -40,7 +40,5 @@ class MatchDefinition
     @number_of_hands = number_of_hands.to_i
     @random_seed = random_seed.to_i
     @player_names = player_names
-
-
   end
 end

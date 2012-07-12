@@ -1,13 +1,8 @@
 
-require 'dmorrill10-utils/class'
-
 require 'acpc_poker_types/match_state'
 require 'acpc_poker_types/poker_action'
 
 class ActionMessages
-
-  exceptions :unable_to_parse_to_message, :unable_to_parse_from_message,
-    :unable_to_parse_score
 
   attr_reader :data, :final_score
 
@@ -17,7 +12,7 @@ class ActionMessages
     )
       {seat: $1.to_i - 1, state: MatchState.parse($2)}
     else
-      raise UnableToParseToMessage, to_message
+      nil
     end
   end
 
@@ -27,7 +22,7 @@ class ActionMessages
     )
       {seat: $1.to_i - 1, state: MatchState.parse($2), action: PokerAction.new($3)}
     else
-      raise UnableToParseFromMessage, from_message
+      nil
     end
   end
 
@@ -44,15 +39,16 @@ class ActionMessages
          player_results
       end
     else
-      raise UnableToParseScore, score_string
+      nil
     end
   end
 
   def self.parse_to_or_from_message(message)
-    begin
-      ActionMessages.parse_to_message(message)
-     rescue UnableToParseToMessage
+    parsed_message = ActionMessages.parse_to_message(message)
+    if parsed_message.nil?
       ActionMessages.parse_from_message(message)
+    else
+      parsed_message
     end
   end
 
@@ -66,13 +62,11 @@ class ActionMessages
 
   def initialize(acpc_log_statements)
     @data = acpc_log_statements.inject([]) do |accumulating_data, log_line|
-      begin
-        begin
-          accumulating_data << ActionMessages.parse_to_or_from_message(log_line)
-        rescue UnableToParseToMessage, UnableToParseFromMessage
-          @final_score = ActionMessages.parse_score(log_line)
-        end
-      rescue UnableToParseScore # Skip lines that don't match
+      parsed_message = ActionMessages.parse_to_or_from_message(log_line)
+      if parsed_message
+        accumulating_data << parsed_message
+      else
+        @final_score = ActionMessages.parse_score(log_line) unless @final_score
       end
 
       accumulating_data

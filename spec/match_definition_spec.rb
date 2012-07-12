@@ -64,9 +64,9 @@ describe MatchDefinition do
       end
     end
   end
-  it 'raises an exception if initialized with an improperly formatted string' do
+  it 'returns nil if asked to parse an improperly formatted string' do
     string = 'improperly formatted string'
-    (->() { @patient = MatchDefinition.parse(string, ['p1', 'p2'], 'game def directory') }).must_raise MatchDefinition::UnableToParse
+    @patient = MatchDefinition.parse(string, ['p1', 'p2'], 'game def directory').must_be_nil
   end
 
   def init_components
