@@ -4,16 +4,20 @@ require_relative 'support/spec_helper'
 
 require 'mocha'
 
+require 'acpc_dealer'
 require 'acpc_poker_types/match_state'
 require 'acpc_poker_types/poker_action'
 
 require_relative '../lib/acpc_dealer_data/action_messages'
+require_relative '../lib/acpc_dealer_data/match_definition'
 
 describe ActionMessages do
   before do
     @data = nil
     @final_score = nil
     @patient = nil
+    @match_def = nil
+    @player_names = nil
   end
 
   describe '::parse_to_message' do
@@ -94,30 +98,58 @@ describe ActionMessages do
 
   describe 'properly parses ACPC log statements' do
     it 'from file' do
+      skip "Not sure how to test this easily when GameDefinition needs to open a file as well"
+
       init_data do |action_messages|
         file_name = 'file_name'
-        File.stubs(:open).with(file_name, 'r').yields(
+        File.expects(:open).with(file_name, 'r').yields(
           action_messages
-        ).returns(ActionMessages.parse(action_messages))
+        ).returns(
+          ActionMessages.parse(
+            action_messages,
+            @player_names,
+            AcpcDealer::DEALER_DIRECTORY
+          )
+        )
 
-        @patient = ActionMessages.parse_file file_name
+        @patient = ActionMessages.parse_file(
+          file_name,
+          @player_names,
+          AcpcDealer::DEALER_DIRECTORY
+        )
 
         check_patient
       end
     end
     it 'from array' do
       init_data do |action_messages|
-        @patient = ActionMessages.parse action_messages
+        @patient = ActionMessages.parse(
+          action_messages,
+          @player_names,
+          AcpcDealer::DEALER_DIRECTORY
+        )
 
         check_patient
       end
     end
   end
 
+  def check_patient
+    @patient.data.must_equal @data
+    @patient.final_score.must_equal @final_score    
+    @patient.match_def.must_equal @match_def
+  end
+
   def init_data
     all_data.each do |game, data_hash|
       @final_score = data_hash[:final_score]
-      @data = data_hash[:data]        
+      @data = data_hash[:data]
+      @player_names = data_hash[:player_names]
+      @match_def = MatchDefinition.parse(
+        data_hash[:action_messages].first,
+        @player_names,
+        AcpcDealer::DEALER_DIRECTORY
+      )
         
       yield data_hash[:action_messages]
     end
@@ -127,6 +159,7 @@ describe ActionMessages do
     {
       two_player_limit: {
         action_messages: [
+          "# name/game/hands/seed 2p.limit.h1000.r0 holdem.limit.2p.reverse_blinds.game 1000 0\n",
           "TO 1 at 1341696000.058613 MATCHSTATE:1:999:crc/cc/cc/:|TdQd/As6d6h/7h/4s\n",
           "TO 2 at 1341696000.058634 MATCHSTATE:0:999:crc/cc/cc/:Jc8d|/As6d6h/7h/4s\n",
           "FROM 2 at 1341696000.058641 MATCHSTATE:0:999:crc/cc/cc/:Jc8d|/As6d6h/7h/4s:r\n",
@@ -156,10 +189,12 @@ describe ActionMessages do
           {seat: 0, state: MatchState.parse('MATCHSTATE:1:999:crc/cc/cc/rc:Jc8d|TdQd/As6d6h/7h/4s')},
           {seat: 1, state: MatchState.parse('MATCHSTATE:0:999:crc/cc/cc/rc:Jc8d|TdQd/As6d6h/7h/4s')}
         ],
-        final_score: {p1: 455, p2: -455}
+        final_score: {p1: 455, p2: -455},
+        player_names: ['p1', 'p2']
       },
       two_player_nolimit: {
         action_messages: [
+          "# name/game/hands/seed 2p.nolimit.h1000.r0 holdem.nolimit.2p.reverse_blinds.game 1000 0\n",
           "TO 1 at 1341695921.617099 MATCHSTATE:0:998:cc/r5841r19996r20000:Kc6h|/QhAh8d\n",
           "TO 2 at 1341695921.617126 MATCHSTATE:1:998:cc/r5841r19996r20000:|Qc3s/QhAh8d\n",
           "FROM 2 at 1341695921.617133 MATCHSTATE:1:998:cc/r5841r19996r20000:|Qc3s/QhAh8d:c\n",
@@ -193,10 +228,12 @@ describe ActionMessages do
           {seat: 0, state: MatchState.parse('MATCHSTATE:1:999:f:|TdQd')},
           {seat: 1, state: MatchState.parse('MATCHSTATE:0:999:f:Jc8d|')}
         ],
-        final_score: {p1: -64658, p2: 64658}
+        final_score: {p1: -64658, p2: 64658},
+        player_names: ['p1', 'p2']
       },
       three_player_limit: {
         action_messages: [
+          "# name/game/hands/seed 3p.limit.h1000.r0 holdem.limit.3p.game 1000 0\n",
           "TO 1 at 1341696046.871086 MATCHSTATE:0:999:ccc/ccc/rrcc/rrrfr:QsAs||/4d6d2d/5d/2c\n",
           "TO 2 at 1341696046.871128 MATCHSTATE:1:999:ccc/ccc/rrcc/rrrfr:|3s8h|/4d6d2d/5d/2c\n",
           "TO 3 at 1341696046.871175 MATCHSTATE:2:999:ccc/ccc/rrcc/rrrfr:||Qd3c/4d6d2d/5d/2c\n",
@@ -220,10 +257,12 @@ describe ActionMessages do
           {seat: 1, state: MatchState.parse('MATCHSTATE:1:999:ccc/ccc/rrcc/rrrfrc:|3s8h|Qd3c/4d6d2d/5d/2c')},
           {seat: 2, state: MatchState.parse('MATCHSTATE:2:999:ccc/ccc/rrcc/rrrfrc:|3s8h|Qd3c/4d6d2d/5d/2c')},
         ],
-        final_score: {p1: -4330, p2: 625, p3: 3705}
+        final_score: {p1: -4330, p2: 625, p3: 3705},
+        player_names: ['p1', 'p2', 'p3']
       },
       three_player_nolimit: {
         action_messages: [
+          "# name/game/hands/seed 3p.nolimit.h1000.r0 holdem.nolimit.3p.game 1000 0\n",
           "TO 1 at 1341715420.129997 MATCHSTATE:0:999:ccr12926r20000c:QsAs||\n",
           "TO 2 at 1341715420.130034 MATCHSTATE:1:999:ccr12926r20000c:|3s8h|\n",
           "TO 3 at 1341715420.130070 MATCHSTATE:2:999:ccr12926r20000c:||Qd3c\n",
@@ -247,13 +286,9 @@ describe ActionMessages do
           {seat: 1, state: MatchState.parse('MATCHSTATE:1:999:ccr12926r20000cc///:QsAs|3s8h|Qd3c/4d6d2d/5d/2c')},
           {seat: 2, state: MatchState.parse('MATCHSTATE:2:999:ccr12926r20000cc///:QsAs|3s8h|Qd3c/4d6d2d/5d/2c')}
         ],
-        final_score: {p1: 684452, p2: 552584.5, p3: -1237036.5}
+        final_score: {p1: 684452, p2: 552584.5, p3: -1237036.5},
+        player_names: ['p1', 'p2', 'p3']
       }
     }
-  end
-
-  def check_patient
-    @patient.data.must_equal @data
-    @patient.final_score.must_equal @final_score
   end
 end

@@ -2,9 +2,11 @@
 require 'acpc_poker_types/match_state'
 require 'acpc_poker_types/poker_action'
 
+require_relative 'match_definition'
+
 class ActionMessages
 
-  attr_reader :data, :final_score
+  attr_reader :data, :final_score, :match_def
 
   def self.parse_to_message(to_message)
     if to_message.strip.match(
@@ -52,21 +54,25 @@ class ActionMessages
     end
   end
 
-  def self.parse_file(acpc_log_file_path)
+  def self.parse_file(acpc_log_file_path, player_names, game_def_directory)
     File.open(acpc_log_file_path, 'r') do |file| 
-      ActionMessages.parse file
+      ActionMessages.parse file, player_names, game_def_directory
     end
   end
 
   alias_new :parse
 
-  def initialize(acpc_log_statements)
+  def initialize(acpc_log_statements, player_names, game_def_directory)
     @data = acpc_log_statements.inject([]) do |accumulating_data, log_line|
-      parsed_message = ActionMessages.parse_to_or_from_message(log_line)
-      if parsed_message
-        accumulating_data << parsed_message
+      if @match_def.nil?
+        @match_def = MatchDefinition.parse(log_line, player_names, game_def_directory)
       else
-        @final_score = ActionMessages.parse_score(log_line) unless @final_score
+        parsed_message = ActionMessages.parse_to_or_from_message(log_line)
+        if parsed_message
+          accumulating_data << parsed_message
+        else
+          @final_score = ActionMessages.parse_score(log_line) unless @final_score
+        end
       end
 
       accumulating_data

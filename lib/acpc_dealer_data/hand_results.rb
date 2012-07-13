@@ -1,9 +1,11 @@
 
 require 'dmorrill10-utils/class'
 
+require_relative 'match_definition'
+
 class HandResults
 
-  attr_reader :data, :final_score
+  attr_reader :data, :final_score, :match_def
 
   def self.parse_state(state_string)
     if state_string.strip.match(
@@ -39,21 +41,25 @@ class HandResults
     end
   end
 
-  def self.parse_file(acpc_log_file_path)
+  def self.parse_file(acpc_log_file_path, player_names, game_def_directory)
     File.open(acpc_log_file_path, 'r') do |file| 
-      HandResults.parse file
+      HandResults.parse file, player_names, game_def_directory
     end
   end
 
   alias_new :parse
 
-  def initialize(acpc_log_statements)
+  def initialize(acpc_log_statements, player_names, game_def_directory)
     @data = acpc_log_statements.inject([]) do |accumulating_data, log_line|
-      parsed_message = HandResults.parse_state(log_line)
-      if parsed_message
-        accumulating_data << parsed_message
+      if @match_def.nil?
+        @match_def = MatchDefinition.parse(log_line, player_names, game_def_directory)
       else
-        @final_score = HandResults.parse_score(log_line) unless @final_score
+        parsed_message = HandResults.parse_state(log_line)
+        if parsed_message
+          accumulating_data << parsed_message
+        else
+          @final_score = HandResults.parse_score(log_line) unless @final_score
+        end
       end
       
       accumulating_data

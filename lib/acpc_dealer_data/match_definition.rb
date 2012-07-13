@@ -1,4 +1,6 @@
 
+require 'set'
+
 require 'acpc_poker_types/game_definition'
 
 require 'dmorrill10-utils/class'
@@ -40,5 +42,15 @@ class MatchDefinition
     @number_of_hands = number_of_hands.to_i
     @random_seed = random_seed.to_i
     @player_names = player_names
+  end
+
+  def ==(other)
+    (
+      @name == other.name &&
+      Set.new(@game_def.to_a) == Set.new(other.game_def.to_a) &&
+      @number_of_hands == other.number_of_hands &&
+      @random_seed == other.random_seed &&
+      @player_names == other.player_names
+    )
   end
 end

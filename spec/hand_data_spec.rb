@@ -27,7 +27,21 @@ describe HandData do
   end
 
   describe 'raises an exception' do
+    it 'if match definitions from action data and result do not match or they are both nil' do
+      init_data do |action_data, result|
+        skip 'TODO'
+
+        action_data.stubs(:match_def).returns(nil)
+        ->() do 
+          @patient = HandData.new(
+            @match_def, action_data, result
+          )
+        end.must_raise HandData::PlayerNamesDoNotMatch
+      end
+    end
     it 'if player names in the match definition and hand result do not match' do
+      skip 'TODO'
+
       init_data do |action_data, result|
         result[:incorrect_player_name] = result[:p1]
         result.delete :p1
@@ -40,6 +54,8 @@ describe HandData do
       end
     end
     it 'if the given action data does not have the proper format' do
+      skip 'TODO'
+
       init_data do |action_data, result|
         ->() do 
           @patient = HandData.new(
@@ -51,6 +67,8 @@ describe HandData do
   end
 
   it 'reports the chip distribution for every seat' do
+    skip 'TODO'
+
     init_data do |action_data, result|
       @patient = HandData.new(@match_def, action_data, result)
 
@@ -59,6 +77,8 @@ describe HandData do
   end
 
   it 'works properly on every turn for every seat' do
+    skip 'TODO'
+    
     init_data do |action_data, result|
       @match_def.game_def.number_of_players.times do |seat|
         @seat = seat

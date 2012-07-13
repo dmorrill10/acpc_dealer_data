@@ -14,12 +14,36 @@ end
 
 class PokerMatchData
 
-  exceptions :inconsistent_data, :no_match_definition, :no_final_score
+  exceptions :inconsistent_data, :no_final_score
 
   attr_reader :chip_distribution, :match_def, :hand_number, :data, :seat
 
-  def initialize
-    raise
+  def initialize(action_messages, result_messages, player_names, game_def_directory)
+    parsed_action_messages = ActionMessages.parse action_messages
+    parsed_hand_results = HandResults.parse result_messages
+
+    raise InconsistentData
+
+
+
+    action_message_index = 0
+    @data = result_messages.inject([]) do |accumulating_data, result_message|
+      unless @match_def
+        @match_def = MatchDefinition.parse(
+          result_message, 
+          player_names, 
+          game_def_directory
+        )
+        next
+      end
+
+      action_message = action_messages[action_message_index]
+
+
+
+    end
+
+    raise InconsistentData
   end
 
   # def for_every_turn!(seat)

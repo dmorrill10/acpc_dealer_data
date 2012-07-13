@@ -4,13 +4,18 @@ require File.expand_path('../support/spec_helper', __FILE__)
 
 require 'mocha'
 
-require File.expand_path('../../lib/acpc_dealer_data/hand_results', __FILE__)
+require 'acpc_dealer'
+
+require_relative '../lib/acpc_dealer_data/hand_results'
+require_relative '../lib/acpc_dealer_data/match_definition'
 
 describe HandResults do
   before do
+    @patient = nil
     @data = nil
     @final_score = nil
-    @patient = nil
+    @player_names = nil
+    @match_def = nil
   end
 
   describe '::parse_state' do
@@ -52,6 +57,8 @@ describe HandResults do
 
   describe 'properly parses ACPC log statements' do
     it 'from file' do
+      skip "Not sure how to test this easily when GameDefinition needs to open a file as well"
+
       init_data do |log_statements|
         file_name = 'file_name'
         File.stubs(:open).with(file_name, 'r').yields(
@@ -65,17 +72,33 @@ describe HandResults do
     end
     it 'from array' do
       init_data do |log_statements|
-        @patient = HandResults.parse log_statements
+        @patient = HandResults.parse(
+          log_statements,
+          @player_names,
+          AcpcDealer::DEALER_DIRECTORY
+        )
 
         check_patient
       end
     end
   end
 
+  def check_patient
+    @patient.data.must_equal @data
+    @patient.final_score.must_equal @final_score
+    @patient.match_def.must_equal @match_def
+  end
+
   def init_data
     all_data.each do |game, data_hash|
       @final_score = data_hash[:final_score]
-      @data = data_hash[:data]        
+      @data = data_hash[:data]
+      @player_names = data_hash[:player_names]
+      @match_def = MatchDefinition.parse(
+        data_hash[:log_statements].first,
+        @player_names,
+        AcpcDealer::DEALER_DIRECTORY
+      )
         
       yield data_hash[:log_statements]
     end
@@ -85,6 +108,7 @@ describe HandResults do
     {
       two_player_limit: {
         log_statements: [
+          "# name/game/hands/seed 2p.limit.h1000.r0 holdem.limit.2p.reverse_blinds.game 1000 0\n",
           "STATE:0:crrrc/rrc/rf:3s5d|Td2s/4d5c4s/Kd:60|-60:p1|p2\n",
           "STATE:1:rc/crrrrc/rrc/rc:7d5s|Kh9c/As3hTs/Jh/Js:-120|120:p2|p1\n",
           "STATE:2:cc/cc/rc/rc:Kh6h|As2h/Qd2c2d/7d/3d:-50|50:p1|p2\n",
@@ -109,10 +133,12 @@ describe HandResults do
           {p1: -100, p2: 100},
           {p1: 40, p2: -40}
         ],
-        final_score: {p1: 100, p2: -100}
+        final_score: {p1: 100, p2: -100},
+        player_names: ['p1', 'p2']
       },
       two_player_nolimit: {
         log_statements: [
+          "# name/game/hands/seed 2p.nolimit.h1000.r0 holdem.nolimit.2p.reverse_blinds.game 1000 0\n",
           "STATE:0:r5924c/r17356c/cc/r19718c:3s5d|Td2s/4d5c4s/Kd/2c:19718|-19718:p1|p2\n",
           "STATE:1:cc/r7485r16652c/r17998r19429r20000c/:7d5s|Kh9c/As3hTs/Jh/Js:-20000|20000:p2|p1\n",
           "STATE:2:r18810c/r19264r19774c/cr19995r20000c/:Kh6h|As2h/Qd2c2d/7d/3d:-20000|20000:p1|p2\n",
@@ -137,10 +163,12 @@ describe HandResults do
           {p1: -20000, p2: 20000},
           {p1: -50, p2: 50}
         ],
-        final_score: {p1: 14298, p2: -14298}
+        final_score: {p1: 14298, p2: -14298},
+        player_names: ['p1', 'p2']
       },
       three_player_limit: {
         log_statements: [
+          "# name/game/hands/seed 3p.limit.h1000.r0 holdem.limit.3p.game 1000 0\n",
           "STATE:0:ccc/rrcrcrcc/rcrrcc/crcrcrcrfc:Kd2d|6c2s|8hTh/2c4h9s/Ad/As:360|-190|-170:p1|p2|p3\n",
           "STATE:1:rrcrcc/rrrcf/rrrrc/cc:Td7s|4c5s|Qc4s/5dAd7c/6c/2c:210|-60|-150:p2|p3|p1\n",
           "STATE:2:fcc/crc/crrc/rrc:Jh9d|8hAh|As6c/3dKc3c/2d/Kh:-100|100|0:p3|p1|p2\n",
@@ -165,10 +193,12 @@ describe HandResults do
           {p1: -80, p2: 0, p3: 80},
           {p1: -70, p2: -130, p3: 200}
         ],
-        final_score: {p1: 105, p2: 375, p3: -550}
+        final_score: {p1: 105, p2: 375, p3: -550},
+        player_names: ['p1', 'p2', 'p3']
       },
       three_player_nolimit: {
         log_statements: [
+          "# name/game/hands/seed 3p.nolimit.h1000.r0 holdem.nolimit.3p.game 1000 0\n",
           "STATE:0:ccc/ccc/r4881cr14955cr20000cc/:Kd2d|6c2s|8hTh/2c4h9s/Ad/As:40000|-20000|-20000:p1|p2|p3\n",
           "STATE:1:ccc/cr7400r17645r20000cc//:Td7s|4c5s|Qc4s/5dAd7c/6c/2c:40000|-20000|-20000:p2|p3|p1\n",
           "STATE:2:r7187r19832cc/cr19953fc/cr20000c/:Jh9d|8hAh|As6c/3dKc3c/2d/Kh:-20000|39832|-19832:p3|p1|p2\n",
@@ -193,13 +223,9 @@ describe HandResults do
           {p1: -20000, p2: -20000, p3: 40000},
           {p1: -20000, p2: -20000, p3: 40000}
         ],
-        final_score: {p1: 19835, p2: 621, p3: -20456}
+        final_score: {p1: 19835, p2: 621, p3: -20456},
+        player_names: ['p1', 'p2', 'p3']
       }
     }
-  end
-
-  def check_patient
-    @patient.data.must_equal @data
-    @patient.final_score.must_equal @final_score
   end
 end

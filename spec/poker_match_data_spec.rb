@@ -17,19 +17,79 @@ describe PokerMatchData do
     @patient = nil
     @chip_distribution = nil
     @match_def = nil
+    @match_def_line_index = nil
+    @score_line_index = nil
+    @player_names = nil
   end
 
   describe 'when given action and result messages' do
     describe 'raises an exception if ' do
       it 'the match definitions from each set of messages do not match' do
         init_data do |action_messages, result_messages|
+          new_action_messages = action_messages.dup
+          new_action_messages[@match_def_line_index] = '# name/game/hands/seed different_name holdem.limit.2p.reverse_blinds.game 2 0\n'
+        
           ->() do
-            PokerMatchData.new action_messages, result_messages
+            PokerMatchData.new(
+              new_action_messages, 
+              result_messages,
+              @player_names,
+              AcpcDealer::DEALER_DIRECTORY
+            )
+          end.must_raise PokerMatchData::InconsistentData
+
+          new_result_messages = result_messages.dup
+          new_result_messages[@match_def_line_index] = '# name/game/hands/seed different_name holdem.limit.2p.reverse_blinds.game 2 0\n'
+
+          ->() do            
+            PokerMatchData.new(
+              action_messages,
+              new_result_messages,
+              @player_names,
+              AcpcDealer::DEALER_DIRECTORY
+            )
           end.must_raise PokerMatchData::InconsistentData
         end
       end
       it 'the final scores from each set of messages do not match' do
-        skip    
+        init_data do |action_messages, result_messages|
+          new_action_messages = action_messages.dup
+          new_action_messages[@score_line_index] = 'SCORE:9001|-9001:p1|p2'
+        
+          ->() do
+            PokerMatchData.new(
+              new_action_messages,
+              result_messages,
+              @player_names,
+              AcpcDealer::DEALER_DIRECTORY
+            )
+          end.must_raise PokerMatchData::InconsistentData
+
+
+          new_result_messages = result_messages.dup
+          new_result_messages[@score_line_index] = 'SCORE:9001|-9001:p1|p2'
+
+          ->() do            
+            PokerMatchData.new(
+              action_messages,
+              new_result_messages,
+              @player_names,
+              AcpcDealer::DEALER_DIRECTORY
+            )
+          end.must_raise PokerMatchData::InconsistentData
+        end
+      end
+    end
+    it 'works properly' do
+      init_data do |action_messages, result_messages|
+        @patient = PokerMatchData.new(
+          action_messages, 
+          result_messages,
+          @player_names,
+          AcpcDealer::DEALER_DIRECTORY
+        )
+
+        check_patient
       end
     end
   end
@@ -37,16 +97,21 @@ describe PokerMatchData do
   end
 
   def check_patient
+    @patient.match_def.must_equal @match_def
+    @patient.chip_distribution.must_equal @chip_distribution
   end
 
   def init_data
     data.each do |game, data_hash|
       @chip_distribution = data_hash[:chip_distribution]
+      @match_def_line_index = data_hash[:match_def_line_index]
+      @player_names = data_hash[:player_names]
       @match_def = MatchDefinition.parse(
-          data_hash[:result_messages][data_hash[:match_def_line_index]],
-          data_hash[:player_names],
+          data_hash[:result_messages][@match_def_line_index],
+          @player_names,
           AcpcDealer::DEALER_DIRECTORY
         )
+      @score_line_index = data_hash[:score_line_index]
         
       yield data_hash[:action_messages], data_hash[:result_messages]
     end
@@ -136,6 +201,7 @@ describe PokerMatchData do
         ],
         hand_start_line_indices: [6, 35],
         match_def_line_index: 0,
+        score_line_index: -1,
         player_names: ['p1', 'p2'],
         chip_distribution: [110, -110],
       }
