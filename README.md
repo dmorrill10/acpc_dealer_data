@@ -1,6 +1,6 @@
 # AcpcDealerData
 
-TODO: Write a gem description
+The [ACPC Dealer Data][ACPC Dealer Data GitHub] gem contains utilities for extracting information from [<em>ACPC Dealer Server</em>][ACPC competition server] logs.
 
 ## Installation
 
@@ -18,7 +18,7 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+See the [documentation][docs] for information on available classes, modules, and constants.
 
 ## Contributing
 
@@ -27,3 +27,12 @@ TODO: Write usage instructions here
 3. Commit your changes (`git commit -am 'Added some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
 5. Create new Pull Request
+
+
+<!---
+    Link references
+    ================
+-->
+
+[ACPC Dealer Data GitHub]: https://github.com/dmorrill10/acpc_dealer_data#readme
+[docs]: http://rubydoc.info/github/dmorrill10/acpc_dealer_data/frames
