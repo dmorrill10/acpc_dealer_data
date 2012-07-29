@@ -25,6 +25,9 @@ class HandData
     set_chip_distribution! result
 
     set_data! action_data
+
+    @turn_number = nil
+    @seat = nil
   end
 
   def ==(other)

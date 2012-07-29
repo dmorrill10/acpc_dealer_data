@@ -50,6 +50,9 @@ class HandResults
   alias_new :parse
 
   def initialize(acpc_log_statements, player_names, game_def_directory)
+    @final_score = nil
+    @match_def = nil
+    
     @data = acpc_log_statements.inject([]) do |accumulating_data, log_line|
       if @match_def.nil?
         @match_def = MatchDefinition.parse(log_line, player_names, game_def_directory)

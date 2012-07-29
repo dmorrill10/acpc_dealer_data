@@ -32,7 +32,7 @@ describe PokerMatchData do
           new_action_messages[@match_def_line_index] = '# name/game/hands/seed different_name holdem.limit.2p.reverse_blinds.game 2 0\n'
         
           ->() do
-            PokerMatchData.new(
+            PokerMatchData.parse(
               new_action_messages, 
               result_messages,
               @player_names,
@@ -44,7 +44,7 @@ describe PokerMatchData do
           new_result_messages[@match_def_line_index] = '# name/game/hands/seed different_name holdem.limit.2p.reverse_blinds.game 2 0\n'
 
           ->() do            
-            PokerMatchData.new(
+            PokerMatchData.parse(
               action_messages,
               new_result_messages,
               @player_names,
@@ -61,7 +61,7 @@ describe PokerMatchData do
           new_action_messages << 'SCORE:9001|-9001:p1|p2'
         
           ->() do
-            PokerMatchData.new(
+            PokerMatchData.parse(
               new_action_messages, 
               result_messages,
               @player_names,
@@ -75,7 +75,7 @@ describe PokerMatchData do
           new_result_messages << 'SCORE:9001|-9001:p1|p2'
 
           ->() do            
-            PokerMatchData.new(
+            PokerMatchData.parse(
               action_messages, 
               new_result_messages,
               @player_names,
@@ -88,7 +88,7 @@ describe PokerMatchData do
     it 'works properly on every hand' do
       init_data do |action_messages, result_messages|
 
-        @patient = PokerMatchData.new(
+        @patient = PokerMatchData.parse(
           action_messages, 
           result_messages,
           @player_names,

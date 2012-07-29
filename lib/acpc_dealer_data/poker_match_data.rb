@@ -1,6 +1,8 @@
 
 require 'dmorrill10-utils/class'
 
+require 'celluloid'
+
 require_relative 'action_messages'
 require_relative 'hand_data'
 require_relative 'hand_results'
@@ -12,10 +14,21 @@ class PokerMatchData
 
   attr_reader :chip_distribution, :match_def, :hand_number, :data, :seat
 
-  def initialize(action_messages, result_messages, player_names, dealer_directory)
+  def self.parse_files(action_messages_file, result_messages_file, player_names, dealer_directory)
+    parsed_action_messages = Celluloid::Future.new { ActionMessages.parse_file action_messages_file, player_names, dealer_directory }
+    parsed_hand_results = Celluloid::Future.new { HandResults.parse_file result_messages_file, player_names, dealer_directory }
+
+    PokerMatchData.new parsed_action_messages.value, parsed_hand_results.value, player_names, dealer_directory
+  end
+
+  def self.parse(action_messages, result_messages, player_names, dealer_directory)
     parsed_action_messages = ActionMessages.parse action_messages, player_names, dealer_directory
     parsed_hand_results = HandResults.parse result_messages, player_names, dealer_directory
 
+    PokerMatchData.new parsed_action_messages, parsed_hand_results, player_names, dealer_directory
+  end
+
+  def initialize(parsed_action_messages, parsed_hand_results, player_names, dealer_directory)
     if (
       parsed_action_messages.match_def.nil? ||
       parsed_hand_results.match_def.nil? ||
@@ -37,7 +50,21 @@ class PokerMatchData
     set_chip_distribution! parsed_hand_results.final_score
 
     set_data! parsed_action_messages, parsed_hand_results
+
+    @seat = nil
   end
+
+  def for_every_seat!
+    match_def.game_def.number_of_players.times do |seat|
+      @seat = seat
+
+      yield seat
+    end
+  end
+
+  def player_name(seat=@seat) @match_def.player_names[seat] end
+  def chip_stack(seat=@seat) @match_def.game_def.chip_stacks[seat] end
+  def chip_balance(seat=@seat) -@chip_distribution[seat] end
 
   def for_every_hand!
     @data.each_index do |i|
