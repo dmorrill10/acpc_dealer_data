@@ -23,8 +23,8 @@ describe PokerMatchData do
   end
 
   describe 'when given action and result messages' do
-    describe 'raises an exception if ' do
-      it 'the match definitions from each set of messages do not match' do
+    describe 'raises an exception if' do
+      it 'match definitions do not match' do
         init_data do |action_messages, result_messages|
           new_action_messages = action_messages.dup
           new_action_messages[@match_def_line_index] = '# name/game/hands/seed different_name holdem.limit.2p.reverse_blinds.game 2 0\n'
@@ -36,7 +36,7 @@ describe PokerMatchData do
               @player_names,
               AcpcDealer::DEALER_DIRECTORY
             )
-          end.must_raise PokerMatchData::InconsistentData
+          end.must_raise PokerMatchData::MatchDefinitionsDoNotMatch
 
           new_result_messages = result_messages.dup
           new_result_messages[@match_def_line_index] = '# name/game/hands/seed different_name holdem.limit.2p.reverse_blinds.game 2 0\n'
@@ -48,35 +48,38 @@ describe PokerMatchData do
               @player_names,
               AcpcDealer::DEALER_DIRECTORY
             )
-          end.must_raise PokerMatchData::InconsistentData
+          end.must_raise PokerMatchData::MatchDefinitionsDoNotMatch
         end
       end
       it 'the final scores from each set of messages do not match' do
         init_data do |action_messages, result_messages|
           new_action_messages = action_messages.dup
-          new_action_messages[@score_line_index] = 'SCORE:9001|-9001:p1|p2'
+          new_action_messages.pop
+          new_action_messages.pop
+          new_action_messages << 'SCORE:9001|-9001:p1|p2'
         
           ->() do
             PokerMatchData.new(
-              new_action_messages,
+              new_action_messages, 
               result_messages,
               @player_names,
               AcpcDealer::DEALER_DIRECTORY
             )
-          end.must_raise PokerMatchData::InconsistentData
-
+          end.must_raise PokerMatchData::FinalScoresDoNotMatch
 
           new_result_messages = result_messages.dup
-          new_result_messages[@score_line_index] = 'SCORE:9001|-9001:p1|p2'
+          new_result_messages.pop
+          new_result_messages.pop
+          new_result_messages << 'SCORE:9001|-9001:p1|p2'
 
           ->() do            
             PokerMatchData.new(
-              action_messages,
+              action_messages, 
               new_result_messages,
               @player_names,
               AcpcDealer::DEALER_DIRECTORY
             )
-          end.must_raise PokerMatchData::InconsistentData
+          end.must_raise PokerMatchData::FinalScoresDoNotMatch
         end
       end
     end

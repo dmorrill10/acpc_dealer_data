@@ -1,8 +1,10 @@
 
 require 'dmorrill10-utils/class'
 
-require_relative 'match_definition'
+require_relative 'action_messages'
 require_relative 'hand_data'
+require_relative 'hand_results'
+require_relative 'match_definition'
 
 # @todo Move to utils
 # Monkey patch for easy boundary checking
@@ -14,36 +16,66 @@ end
 
 class PokerMatchData
 
-  exceptions :inconsistent_data, :no_final_score
+  exceptions :match_definitions_do_not_match, :final_scores_do_not_match
 
   attr_reader :chip_distribution, :match_def, :hand_number, :data, :seat
 
-  def initialize(action_messages, result_messages, player_names, game_def_directory)
-    parsed_action_messages = ActionMessages.parse action_messages
-    parsed_hand_results = HandResults.parse result_messages
+  def initialize(action_messages, result_messages, player_names, dealer_directory)
+    parsed_action_messages = ActionMessages.parse action_messages, player_names, dealer_directory
+    parsed_hand_results = HandResults.parse result_messages, player_names, dealer_directory
 
-    raise InconsistentData
-
-
-
-    action_message_index = 0
-    @data = result_messages.inject([]) do |accumulating_data, result_message|
-      unless @match_def
-        @match_def = MatchDefinition.parse(
-          result_message, 
-          player_names, 
-          game_def_directory
-        )
-        next
-      end
-
-      action_message = action_messages[action_message_index]
-
-
-
+    if (
+      parsed_action_messages.match_def.nil? ||
+      parsed_hand_results.match_def.nil? ||
+      parsed_action_messages.match_def != parsed_hand_results.match_def
+    )
+      raise MatchDefinitionsDoNotMatch
     end
 
-    raise InconsistentData
+    @match_def = parsed_hand_results.match_def
+
+    if (
+      parsed_action_messages.final_score.nil? ||
+      parsed_hand_results.final_score.nil? ||
+      parsed_action_messages.final_score != parsed_hand_results.final_score
+    )
+      raise FinalScoresDoNotMatch
+    end
+
+    set_chip_distribution! parsed_hand_results.final_score
+
+
+    # raise InconsistentData
+
+
+    # action_message_index = 0
+    # @data = result_messages.inject([]) do |accumulating_data, result_message|
+    #   unless @match_def
+    #     @match_def = MatchDefinition.parse(
+    #       result_message, 
+    #       player_names, 
+    #       game_def_directory
+    #     )
+    #     next
+    #   end
+
+    #   action_message = action_messages[action_message_index]
+    # end
+
+    # raise InconsistentData
+  end
+
+  protected
+
+  def set_chip_distribution!(final_score)
+    @chip_distribution = []
+    final_score.each do |player_name, amount|
+      begin
+        @chip_distribution[@match_def.player_names.index(player_name.to_s)] = amount
+      rescue TypeError
+        raise PlayerNamesDoNotMatch
+      end
+    end
   end
 
   # def for_every_turn!(seat)

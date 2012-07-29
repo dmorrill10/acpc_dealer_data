@@ -12,7 +12,7 @@ end
 
 class HandData
 
-  exceptions :player_names_do_not_match, :invalid_data
+  exceptions :match_definitions_do_not_match, :invalid_data
 
   attr_reader :chip_distribution, :match_def, :turn_number, :data, :seat
 

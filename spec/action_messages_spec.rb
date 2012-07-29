@@ -160,9 +160,9 @@ describe ActionMessages do
       two_player_limit: {
         action_messages: [
           "# name/game/hands/seed 2p.limit.h1000.r0 holdem.limit.2p.reverse_blinds.game 1000 0\n",
-          "TO 1 at 1341696000.058613 MATCHSTATE:1:999:crc/cc/cc/:|TdQd/As6d6h/7h/4s\n",
-          "TO 2 at 1341696000.058634 MATCHSTATE:0:999:crc/cc/cc/:Jc8d|/As6d6h/7h/4s\n",
-          "FROM 2 at 1341696000.058641 MATCHSTATE:0:999:crc/cc/cc/:Jc8d|/As6d6h/7h/4s:r\n",
+          "TO 1 at 1341696000.058613 MATCHSTATE:1:998:crc/cc/cc/:|TdQd/As6d6h/7h/4s\n",
+          "TO 2 at 1341696000.058634 MATCHSTATE:0:998:crc/cc/cc/:Jc8d|/As6d6h/7h/4s\n",
+          "FROM 2 at 1341696000.058641 MATCHSTATE:0:998:crc/cc/cc/:Jc8d|/As6d6h/7h/4s:r\n",
           "TO 1 at 1341696000.058664 MATCHSTATE:1:999:crc/cc/cc/r:|TdQd/As6d6h/7h/4s\n",
           "TO 2 at 1341696000.058681 MATCHSTATE:0:999:crc/cc/cc/r:Jc8d|/As6d6h/7h/4s\n",
           "FROM 1 at 1341696000.058688 MATCHSTATE:1:999:crc/cc/cc/r:|TdQd/As6d6h/7h/4s:c\n",
@@ -172,22 +172,26 @@ describe ActionMessages do
           'SCORE:455|-455:p1|p2'
         ],
         data: [
-          {seat: 0, state: MatchState.parse('MATCHSTATE:1:999:crc/cc/cc/:|TdQd/As6d6h/7h/4s')},
-          {seat: 1, state: MatchState.parse('MATCHSTATE:0:999:crc/cc/cc/:Jc8d|/As6d6h/7h/4s')}, 
-          {
-            seat: 1, 
-            state: MatchState.parse('MATCHSTATE:0:999:crc/cc/cc/:Jc8d|/As6d6h/7h/4s'),
-            action: PokerAction.new('r')
-          },
-          {seat: 0, state: MatchState.parse('MATCHSTATE:1:999:crc/cc/cc/r:|TdQd/As6d6h/7h/4s')},
-          {seat: 1, state: MatchState.parse('MATCHSTATE:0:999:crc/cc/cc/r:Jc8d|/As6d6h/7h/4s')},
-          {
-            seat: 0, 
-            state: MatchState.parse('MATCHSTATE:1:999:crc/cc/cc/r:|TdQd/As6d6h/7h/4s'),
-            action: PokerAction.new('c')
-          },
-          {seat: 0, state: MatchState.parse('MATCHSTATE:1:999:crc/cc/cc/rc:Jc8d|TdQd/As6d6h/7h/4s')},
-          {seat: 1, state: MatchState.parse('MATCHSTATE:0:999:crc/cc/cc/rc:Jc8d|TdQd/As6d6h/7h/4s')}
+          [
+            {seat: 0, state: MatchState.parse('MATCHSTATE:1:998:crc/cc/cc/:|TdQd/As6d6h/7h/4s')},
+            {seat: 1, state: MatchState.parse('MATCHSTATE:0:998:crc/cc/cc/:Jc8d|/As6d6h/7h/4s')}, 
+            {
+              seat: 1, 
+              state: MatchState.parse('MATCHSTATE:0:998:crc/cc/cc/:Jc8d|/As6d6h/7h/4s'),
+              action: PokerAction.new('r')
+            }
+          ],
+          [
+            {seat: 0, state: MatchState.parse('MATCHSTATE:1:999:crc/cc/cc/r:|TdQd/As6d6h/7h/4s')},
+            {seat: 1, state: MatchState.parse('MATCHSTATE:0:999:crc/cc/cc/r:Jc8d|/As6d6h/7h/4s')},
+            {
+              seat: 0, 
+              state: MatchState.parse('MATCHSTATE:1:999:crc/cc/cc/r:|TdQd/As6d6h/7h/4s'),
+              action: PokerAction.new('c')
+            },
+            {seat: 0, state: MatchState.parse('MATCHSTATE:1:999:crc/cc/cc/rc:Jc8d|TdQd/As6d6h/7h/4s')},
+            {seat: 1, state: MatchState.parse('MATCHSTATE:0:999:crc/cc/cc/rc:Jc8d|TdQd/As6d6h/7h/4s')}
+          ]
         ],
         final_score: {p1: 455, p2: -455},
         player_names: ['p1', 'p2']
@@ -209,24 +213,28 @@ describe ActionMessages do
           "SCORE:-64658|64658:p1|p2"
         ],
         data: [
-          {seat: 0, state: MatchState.parse('MATCHSTATE:0:998:cc/r5841r19996r20000:Kc6h|/QhAh8d')},
-          {seat: 1, state: MatchState.parse('MATCHSTATE:1:998:cc/r5841r19996r20000:|Qc3s/QhAh8d')}, 
-          {
-            seat: 1, 
-            state: MatchState.parse('MATCHSTATE:1:998:cc/r5841r19996r20000:|Qc3s/QhAh8d:c'),
-            action: PokerAction.new('c')
-          },
-          {seat: 0, state: MatchState.parse('MATCHSTATE:0:998:cc/r5841r19996r20000c//:Kc6h|Qc3s/QhAh8d/Th/9d')},
-          {seat: 1, state: MatchState.parse('MATCHSTATE:1:998:cc/r5841r19996r20000c//:Kc6h|Qc3s/QhAh8d/Th/9d')},
-          {seat: 0, state: MatchState.parse('MATCHSTATE:1:999::|TdQd')},
-          {seat: 1, state: MatchState.parse('MATCHSTATE:0:999::Jc8d|')},
-          {
-            seat: 0, 
-            state: MatchState.parse('MATCHSTATE:1:999::|TdQd'),
-            action: PokerAction.new('f')
-          },
-          {seat: 0, state: MatchState.parse('MATCHSTATE:1:999:f:|TdQd')},
-          {seat: 1, state: MatchState.parse('MATCHSTATE:0:999:f:Jc8d|')}
+          [
+            {seat: 0, state: MatchState.parse('MATCHSTATE:0:998:cc/r5841r19996r20000:Kc6h|/QhAh8d')},
+            {seat: 1, state: MatchState.parse('MATCHSTATE:1:998:cc/r5841r19996r20000:|Qc3s/QhAh8d')}, 
+            {
+              seat: 1, 
+              state: MatchState.parse('MATCHSTATE:1:998:cc/r5841r19996r20000:|Qc3s/QhAh8d:c'),
+              action: PokerAction.new('c')
+            },
+            {seat: 0, state: MatchState.parse('MATCHSTATE:0:998:cc/r5841r19996r20000c//:Kc6h|Qc3s/QhAh8d/Th/9d')},
+            {seat: 1, state: MatchState.parse('MATCHSTATE:1:998:cc/r5841r19996r20000c//:Kc6h|Qc3s/QhAh8d/Th/9d')}
+          ],
+          [
+            {seat: 0, state: MatchState.parse('MATCHSTATE:1:999::|TdQd')},
+            {seat: 1, state: MatchState.parse('MATCHSTATE:0:999::Jc8d|')},
+            {
+              seat: 0, 
+              state: MatchState.parse('MATCHSTATE:1:999::|TdQd'),
+              action: PokerAction.new('f')
+            },
+            {seat: 0, state: MatchState.parse('MATCHSTATE:1:999:f:|TdQd')},
+            {seat: 1, state: MatchState.parse('MATCHSTATE:0:999:f:Jc8d|')}
+          ]
         ],
         final_score: {p1: -64658, p2: 64658},
         player_names: ['p1', 'p2']
@@ -245,17 +253,19 @@ describe ActionMessages do
           "SCORE:-4330|625|3705:p1|p2|p3"
         ],
         data: [
-          {seat: 0, state: MatchState.parse('MATCHSTATE:0:999:ccc/ccc/rrcc/rrrfr:QsAs||/4d6d2d/5d/2c')},
-          {seat: 1, state: MatchState.parse('MATCHSTATE:1:999:ccc/ccc/rrcc/rrrfr:|3s8h|/4d6d2d/5d/2c')},
-          {seat: 2, state: MatchState.parse('MATCHSTATE:2:999:ccc/ccc/rrcc/rrrfr:||Qd3c/4d6d2d/5d/2c')},
-          {
-            seat: 2, 
-            state: MatchState.parse('MATCHSTATE:2:999:ccc/ccc/rrcc/rrrfr:||Qd3c/4d6d2d/5d/2c'),
-            action: PokerAction.new('c')
-          },
-          {seat: 0, state: MatchState.parse('MATCHSTATE:0:999:ccc/ccc/rrcc/rrrfrc:QsAs|3s8h|Qd3c/4d6d2d/5d/2c')},
-          {seat: 1, state: MatchState.parse('MATCHSTATE:1:999:ccc/ccc/rrcc/rrrfrc:|3s8h|Qd3c/4d6d2d/5d/2c')},
-          {seat: 2, state: MatchState.parse('MATCHSTATE:2:999:ccc/ccc/rrcc/rrrfrc:|3s8h|Qd3c/4d6d2d/5d/2c')},
+          [
+            {seat: 0, state: MatchState.parse('MATCHSTATE:0:999:ccc/ccc/rrcc/rrrfr:QsAs||/4d6d2d/5d/2c')},
+            {seat: 1, state: MatchState.parse('MATCHSTATE:1:999:ccc/ccc/rrcc/rrrfr:|3s8h|/4d6d2d/5d/2c')},
+            {seat: 2, state: MatchState.parse('MATCHSTATE:2:999:ccc/ccc/rrcc/rrrfr:||Qd3c/4d6d2d/5d/2c')},
+            {
+              seat: 2, 
+              state: MatchState.parse('MATCHSTATE:2:999:ccc/ccc/rrcc/rrrfr:||Qd3c/4d6d2d/5d/2c'),
+              action: PokerAction.new('c')
+            },
+            {seat: 0, state: MatchState.parse('MATCHSTATE:0:999:ccc/ccc/rrcc/rrrfrc:QsAs|3s8h|Qd3c/4d6d2d/5d/2c')},
+            {seat: 1, state: MatchState.parse('MATCHSTATE:1:999:ccc/ccc/rrcc/rrrfrc:|3s8h|Qd3c/4d6d2d/5d/2c')},
+            {seat: 2, state: MatchState.parse('MATCHSTATE:2:999:ccc/ccc/rrcc/rrrfrc:|3s8h|Qd3c/4d6d2d/5d/2c')}
+          ]
         ],
         final_score: {p1: -4330, p2: 625, p3: 3705},
         player_names: ['p1', 'p2', 'p3']
@@ -263,10 +273,10 @@ describe ActionMessages do
       three_player_nolimit: {
         action_messages: [
           "# name/game/hands/seed 3p.nolimit.h1000.r0 holdem.nolimit.3p.game 1000 0\n",
-          "TO 1 at 1341715420.129997 MATCHSTATE:0:999:ccr12926r20000c:QsAs||\n",
-          "TO 2 at 1341715420.130034 MATCHSTATE:1:999:ccr12926r20000c:|3s8h|\n",
-          "TO 3 at 1341715420.130070 MATCHSTATE:2:999:ccr12926r20000c:||Qd3c\n",
-          "FROM 2 at 1341715420.130093 MATCHSTATE:1:999:ccr12926r20000c:|3s8h|:c\n",
+          "TO 1 at 1341715420.129997 MATCHSTATE:0:998:ccr12926r20000c:QsAs||\n",
+          "TO 2 at 1341715420.130034 MATCHSTATE:1:998:ccr12926r20000c:|3s8h|\n",
+          "TO 3 at 1341715420.130070 MATCHSTATE:2:998:ccr12926r20000c:||Qd3c\n",
+          "FROM 2 at 1341715420.130093 MATCHSTATE:1:998:ccr12926r20000c:|3s8h|:c\n",
           "TO 1 at 1341715420.130156 MATCHSTATE:0:999:ccr12926r20000cc///:QsAs|3s8h|Qd3c/4d6d2d/5d/2c\n",
           "TO 2 at 1341715420.130191 MATCHSTATE:1:999:ccr12926r20000cc///:QsAs|3s8h|Qd3c/4d6d2d/5d/2c\n",
           "TO 3 at 1341715420.130225 MATCHSTATE:2:999:ccr12926r20000cc///:QsAs|3s8h|Qd3c/4d6d2d/5d/2c\n",
@@ -274,17 +284,21 @@ describe ActionMessages do
           "SCORE:684452|552584.5|-1237036.5:p1|p2|p3"
         ],
         data: [
-          {seat: 0, state: MatchState.parse('MATCHSTATE:0:999:ccr12926r20000c:QsAs||')},
-          {seat: 1, state: MatchState.parse('MATCHSTATE:1:999:ccr12926r20000c:|3s8h|')},
-          {seat: 2, state: MatchState.parse('MATCHSTATE:2:999:ccr12926r20000c:||Qd3c')},
-          {
-            seat: 1, 
-            state: MatchState.parse('MATCHSTATE:1:999:ccr12926r20000c:|3s8h|'),
-            action: PokerAction.new('c')
-          },
-          {seat: 0, state: MatchState.parse('MATCHSTATE:0:999:ccr12926r20000cc///:QsAs|3s8h|Qd3c/4d6d2d/5d/2c')},
-          {seat: 1, state: MatchState.parse('MATCHSTATE:1:999:ccr12926r20000cc///:QsAs|3s8h|Qd3c/4d6d2d/5d/2c')},
-          {seat: 2, state: MatchState.parse('MATCHSTATE:2:999:ccr12926r20000cc///:QsAs|3s8h|Qd3c/4d6d2d/5d/2c')}
+          [
+            {seat: 0, state: MatchState.parse('MATCHSTATE:0:998:ccr12926r20000c:QsAs||')},
+            {seat: 1, state: MatchState.parse('MATCHSTATE:1:998:ccr12926r20000c:|3s8h|')},
+            {seat: 2, state: MatchState.parse('MATCHSTATE:2:998:ccr12926r20000c:||Qd3c')},
+            {
+              seat: 1, 
+              state: MatchState.parse('MATCHSTATE:1:998:ccr12926r20000c:|3s8h|'),
+              action: PokerAction.new('c')
+            }
+          ],
+          [
+            {seat: 0, state: MatchState.parse('MATCHSTATE:0:999:ccr12926r20000cc///:QsAs|3s8h|Qd3c/4d6d2d/5d/2c')},
+            {seat: 1, state: MatchState.parse('MATCHSTATE:1:999:ccr12926r20000cc///:QsAs|3s8h|Qd3c/4d6d2d/5d/2c')},
+            {seat: 2, state: MatchState.parse('MATCHSTATE:2:999:ccr12926r20000cc///:QsAs|3s8h|Qd3c/4d6d2d/5d/2c')}
+          ]
         ],
         final_score: {p1: 684452, p2: 552584.5, p3: -1237036.5},
         player_names: ['p1', 'p2', 'p3']
