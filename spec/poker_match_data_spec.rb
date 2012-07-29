@@ -18,8 +18,10 @@ describe PokerMatchData do
     @chip_distribution = nil
     @match_def = nil
     @match_def_line_index = nil
-    @score_line_index = nil
     @player_names = nil
+    @hand_number = nil
+    @hand_data_list = nil
+    @final_hand = nil
   end
 
   describe 'when given action and result messages' do
@@ -83,8 +85,9 @@ describe PokerMatchData do
         end
       end
     end
-    it 'works properly' do
+    it 'works properly on every hand' do
       init_data do |action_messages, result_messages|
+
         @patient = PokerMatchData.new(
           action_messages, 
           result_messages,
@@ -92,16 +95,24 @@ describe PokerMatchData do
           AcpcDealer::DEALER_DIRECTORY
         )
 
-        check_patient
+        @hand_number = 0
+        @patient.for_every_hand! do
+          @final_hand = @hand_data_list.length <= @hand_number
+
+          check_patient
+
+          @hand_number += 1
+        end
       end
     end
-  end
-  describe 'when given action and result log files' do
   end
 
   def check_patient
     @patient.match_def.must_equal @match_def
     @patient.chip_distribution.must_equal @chip_distribution
+    @patient.hand_number.must_equal @hand_number
+    @patient.current_hand.must_equal @hand_data_list[@hand_number]
+    @patient.final_hand?.must_equal @final_hand
   end
 
   def init_data
@@ -110,12 +121,30 @@ describe PokerMatchData do
       @match_def_line_index = data_hash[:match_def_line_index]
       @player_names = data_hash[:player_names]
       @match_def = MatchDefinition.parse(
-          data_hash[:result_messages][@match_def_line_index],
-          @player_names,
-          AcpcDealer::DEALER_DIRECTORY
+        data_hash[:result_messages][@match_def_line_index],
+        @player_names,
+        AcpcDealer::DEALER_DIRECTORY
+      )
+      action_messages = ActionMessages.parse(
+        data_hash[:action_messages],
+        @player_names,
+        AcpcDealer::DEALER_DIRECTORY
+      )
+      result_messages = HandResults.parse(
+        data_hash[:result_messages],
+        @player_names,
+        AcpcDealer::DEALER_DIRECTORY 
+      )
+
+      @hand_data_list = []
+      action_messages.data.zip(result_messages.data).each do |action_messages_by_hand, hand_result|
+        @hand_data_list << HandData.new(
+          @match_def,
+          action_messages_by_hand,
+          hand_result
         )
-      @score_line_index = data_hash[:score_line_index]
-        
+      end
+       
       yield data_hash[:action_messages], data_hash[:result_messages]
     end
   end
@@ -204,9 +233,8 @@ describe PokerMatchData do
         ],
         hand_start_line_indices: [6, 35],
         match_def_line_index: 0,
-        score_line_index: -1,
         player_names: ['p1', 'p2'],
-        chip_distribution: [110, -110],
+        chip_distribution: [110, -110]
       }
     }
   end

@@ -6,14 +6,6 @@ require_relative 'hand_data'
 require_relative 'hand_results'
 require_relative 'match_definition'
 
-# @todo Move to utils
-# Monkey patch for easy boundary checking
-class Array
-  def in_bounds?(i)
-    i < length
-  end
-end
-
 class PokerMatchData
 
   exceptions :match_definitions_do_not_match, :final_scores_do_not_match
@@ -32,8 +24,6 @@ class PokerMatchData
       raise MatchDefinitionsDoNotMatch
     end
 
-    @match_def = parsed_hand_results.match_def
-
     if (
       parsed_action_messages.final_score.nil? ||
       parsed_hand_results.final_score.nil? ||
@@ -42,27 +32,30 @@ class PokerMatchData
       raise FinalScoresDoNotMatch
     end
 
+    @match_def = parsed_hand_results.match_def
+
     set_chip_distribution! parsed_hand_results.final_score
 
+    set_data! parsed_action_messages, parsed_hand_results
+  end
 
-    # raise InconsistentData
+  def for_every_hand!
+    @data.each_index do |i|
+      @hand_number = i
 
+      yield @hand_number
+    end
 
-    # action_message_index = 0
-    # @data = result_messages.inject([]) do |accumulating_data, result_message|
-    #   unless @match_def
-    #     @match_def = MatchDefinition.parse(
-    #       result_message, 
-    #       player_names, 
-    #       game_def_directory
-    #     )
-    #     next
-    #   end
+    @hand_number = nil
+    self
+  end
 
-    #   action_message = action_messages[action_message_index]
-    # end
+  def current_hand
+    if @hand_number then @data[@hand_number] else nil end
+  end
 
-    # raise InconsistentData
+  def final_hand?
+    if @hand_number then @data.length <= @hand_number else nil end
   end
 
   protected
@@ -78,129 +71,14 @@ class PokerMatchData
     end
   end
 
-  # def for_every_turn!(seat)
-  #   @seat = seat
-  #   @data.each_index do |i|
-  #     @turn_number = i
-
-  #     yield @turn_number
-  #   end
-
-  #   @turn_number = nil
-  #   self
-  # end
-
-  # def current_match_state(seat=@seat)
-  #   if @turn_number
-  #     @data[@turn_number].state_messages[seat]
-  #   else
-  #     nil
-  #   end
-  # end
-
-  # def next_action
-  #   if @turn_number
-  #     @data[@turn_number].action_message
-  #   else
-  #     nil
-  #   end
-  # end
-
-  # def last_match_state(seat=@seat)
-  #   if @turn_number && @turn_number != 0
-  #     @data[@turn_number-1].state_messages[seat]
-  #   else
-  #     nil
-  #   end
-  # end
-
-  # def last_action
-  #   if @turn_number && @turn_number != 0
-  #     @data[@turn_number-1].action_message
-  #   else
-  #     nil
-  #   end
-  # end
-
-  # def final_turn?
-  #   if @turn_number
-  #     @data.length <= @turn_number
-  #   else
-  #     nil
-  #   end
-  # end
-
-  # protected
-
-  # def set_chip_distribution!(result)
-  #   @chip_distribution = []
-  #   result.each do |player_name, amount|
-  #     begin
-  #       @chip_distribution[@match_def.player_names.index(player_name.to_s)] = amount
-  #     rescue TypeError
-  #       raise PlayerNamesDoNotMatch
-  #     end
-  #   end
-  # end
-
-  # def set_data!(action_data)
-  #   number_of_state_messages = @match_def.game_def.number_of_players
-
-  #   @data = []
-  #   message_number = 0
-  #   while message_number < action_data.length
-  #     state_messages = action_data[message_number..message_number+number_of_state_messages-1]
-
-  #     assert_messages_have_no_actions state_messages
-
-  #     state_messages = process_state_messages state_messages
-
-  #     assert_messages_are_well_defined state_messages
-
-  #     message_number += number_of_state_messages
-
-  #     action_message = if action_data.in_bounds?(message_number) && 
-  #       action_data[message_number][:action]
-
-  #       message_number += 1
-  #       action_data[message_number-1]
-  #     else
-  #       assert_message_is_from_final_turn action_data, message_number, state_messages
-
-  #       nil
-  #     end
-
-  #     @data << Turn.new(state_messages, action_message)
-  #   end
-  # end
-
-  # private
-
-  # def process_state_messages(state_messages)
-  #   state_messages.inject([]) do |messages, raw_messages|
-  #     messages[raw_messages[:seat]] = raw_messages[:state]
-  #     messages
-  #   end
-  # end
-
-  # def assert_messages_have_no_actions(state_messages)
-  #   if state_messages.any? { |message| !message[:action].nil? }
-  #     raise InvalidData, state_messages.find do |message| 
-  #       !message[:action].nil?
-  #     end.inspect
-  #   end
-  # end
-
-  # def assert_messages_are_well_defined(state_messages)
-  #   if state_messages.any? { |message| message.nil? }
-  #     raise InvalidData, state_messages.find { |message| message.nil? }.inspect
-  #   end
-  # end
-
-  # def assert_message_is_from_final_turn(action_data, message_number, state_messages)
-  #   if action_data.in_bounds?(message_number+1) && 
-  #     state_messages.last.round == action_data[message_number+1][:state].round
-  #     raise InvalidData, action_data[message_number].inspect
-  #   end
-  # end
+  def set_data!(parsed_action_messages, parsed_hand_results)
+    @data = []
+    parsed_action_messages.data.zip(parsed_hand_results.data).each do |action_messages_by_hand, hand_result|
+      @data << HandData.new(
+        @match_def,
+        action_messages_by_hand,
+        hand_result
+      )
+    end
+  end
 end

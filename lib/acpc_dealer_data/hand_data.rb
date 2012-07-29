@@ -27,6 +27,12 @@ class HandData
     set_data! action_data
   end
 
+  def ==(other)
+    @match_def == other.match_def &&
+    @chip_distribution == other.chip_distribution &&
+    @data == other.data
+  end
+
   def for_every_turn!(seat)
     @seat = seat
     @data.each_index do |i|
