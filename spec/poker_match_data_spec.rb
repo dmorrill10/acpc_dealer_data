@@ -94,12 +94,14 @@ describe PokerMatchData do
           @player_names,
           AcpcDealer::DEALER_DIRECTORY
         )
+        @patient.seat = 0
 
         @hand_number = 0
         @patient.for_every_hand! do
-          @final_hand = @hand_data_list.length <= @hand_number
-
-          check_patient
+          @final_hand = @hand_number >= @hand_data_list.length - 1
+          @patient.for_every_turn! do
+            check_patient
+          end
 
           @hand_number += 1
         end
@@ -228,7 +230,7 @@ describe PokerMatchData do
           "#--t_hand 600000\n",
           "#--t_per_hand 7000\n",
           "STATE:0:cc/crc/cc/cc:5d5c|9hQd/8dAs8s/4h/6d:20|-20:p1|p2\n",
-          "STATE:1:crc/rc/rrc/rc:6sKs|5dJd/2sTh2h/Qh/8h:90|-90:p2|p1\n",
+          "STATE:1:crc/rc/rrc/rc:6sKs|5dJd/2sTh2h/Qh/8h:-90|90:p2|p1\n",
           'SCORE:110|-110:p1|p2'
         ],
         hand_start_line_indices: [6, 35],

@@ -65,7 +65,7 @@ describe HandData do
 
         @turn_number = 0
         @patient.for_every_turn!(@seat) do
-          @final_turn = @turn_data.length <= @turn_number
+          @final_turn = @turn_number >= @turn_data.length - 1
 
           @last_match_state = @current_match_state
           @current_match_state = @turn_data[@turn_number].state_messages[@seat]

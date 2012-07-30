@@ -36,7 +36,7 @@ class HandData
     @data == other.data
   end
 
-  def for_every_turn!(seat)
+  def for_every_turn!(seat=0)
     @seat = seat
     @data.each_index do |i|
       @turn_number = i
@@ -82,7 +82,7 @@ class HandData
 
   def final_turn?
     if @turn_number
-      @data.length <= @turn_number
+      @turn_number >= @data.length - 1
     else
       nil
     end
