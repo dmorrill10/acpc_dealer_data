@@ -142,22 +142,22 @@ describe HandData do
               MatchState.parse('MATCHSTATE:1:999:crc/cc/cc/:|TdQd/As6d6h/7h/4s'),
               MatchState.parse('MATCHSTATE:0:999:crc/cc/cc/:Jc8d|/As6d6h/7h/4s')
             ],
-            {
-              seat: 1, 
-              state: MatchState.parse('MATCHSTATE:0:999:crc/cc/cc/:Jc8d|/As6d6h/7h/4s'),
-              action: PokerAction.new('r')
-            }
+            ActionMessages::FromMessage.new(
+              1, 
+              MatchState.parse('MATCHSTATE:0:999:crc/cc/cc/:Jc8d|/As6d6h/7h/4s'),
+              PokerAction.new('r')
+            )
           ),
           HandData::Turn.new(
             [
               MatchState.parse('MATCHSTATE:1:999:crc/cc/cc/r:|TdQd/As6d6h/7h/4s'),
               MatchState.parse('MATCHSTATE:0:999:crc/cc/cc/r:Jc8d|/As6d6h/7h/4s')
             ],
-            {
-              seat: 0, 
-              state: MatchState.parse('MATCHSTATE:1:999:crc/cc/cc/r:|TdQd/As6d6h/7h/4s'),
-              action: PokerAction.new('c')
-            }
+            ActionMessages::FromMessage.new(
+              0, 
+              MatchState.parse('MATCHSTATE:1:999:crc/cc/cc/r:|TdQd/As6d6h/7h/4s'),
+              PokerAction.new('c')
+            )
           ),
           HandData::Turn.new(
             [
@@ -191,11 +191,11 @@ describe HandData do
               MatchState.parse('MATCHSTATE:1:999::|TdQd'),
               MatchState.parse('MATCHSTATE:0:999::Jc8d|')
             ],
-            {
-              seat: 0, 
-              state: MatchState.parse('MATCHSTATE:1:999::|TdQd'),
-              action: PokerAction.new('f')
-            }
+            ActionMessages::FromMessage.new(
+              0, 
+              MatchState.parse('MATCHSTATE:1:999::|TdQd'),
+              PokerAction.new('f')
+            )
           ),
           HandData::Turn.new(
             [
@@ -232,11 +232,11 @@ describe HandData do
               MatchState.parse('MATCHSTATE:1:999:ccc/ccc/rrcc/rrrfr:|3s8h|/4d6d2d/5d/2c'),
               MatchState.parse('MATCHSTATE:2:999:ccc/ccc/rrcc/rrrfr:||Qd3c/4d6d2d/5d/2c')
             ],
-            {
-              seat: 2, 
-              state: MatchState.parse('MATCHSTATE:2:999:ccc/ccc/rrcc/rrrfr:||Qd3c/4d6d2d/5d/2c'),
-              action: PokerAction.new('c')
-            }
+            ActionMessages::FromMessage.new(
+              2, 
+              MatchState.parse('MATCHSTATE:2:999:ccc/ccc/rrcc/rrrfr:||Qd3c/4d6d2d/5d/2c'),
+              PokerAction.new('c')
+            )
           ),
           HandData::Turn.new(
             [
@@ -274,11 +274,11 @@ describe HandData do
               MatchState.parse('MATCHSTATE:1:999:ccr12926r20000c:|3s8h|'),
               MatchState.parse('MATCHSTATE:2:999:ccr12926r20000c:||Qd3c')
             ],
-            {
-              seat: 1, 
-              state: MatchState.parse('MATCHSTATE:1:999:ccr12926r20000c:|3s8h|'),
-              action: PokerAction.new('c')
-            }
+            ActionMessages::FromMessage.new(
+              1,
+              MatchState.parse('MATCHSTATE:1:999:ccr12926r20000c:|3s8h|'),
+              PokerAction.new('c')
+            )
           ),
           HandData::Turn.new(
             [

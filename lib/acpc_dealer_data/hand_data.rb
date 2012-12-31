@@ -14,10 +14,26 @@ class HandData
 
   exceptions :match_definitions_do_not_match, :invalid_data
 
-  attr_reader :chip_distribution, :match_def, :turn_number, :data, :seat
+  attr_reader(
+    # @returns [Array<Numeric>] Chip distribution at the end of the hand
+    :chip_distribution,
+    # @returns [MatchDefinition] Game definition and match parameters
+    :match_def, 
+    # @returns [Integer] Zero-index turn number within the hand
+    :turn_number,
+    # @returns [Turn] Turn data
+    :data,
+    # @returns [Integer] Seat of the active player
+    :seat
+  )
 
   # State messages are organized by seat
-  Turn = Struct.new :state_messages, :action_message
+  Turn = Struct.new(
+    # @returns [Array<MatchState>] Match states sent during this turn
+    :state_messages,
+    # @returns [ActionMessages::FromMessage] Action message sent during this turn
+    :action_message
+  )
 
   def initialize(match_def, action_data, result)
     @match_def = match_def
@@ -56,6 +72,7 @@ class HandData
     end
   end
 
+  # @return [ActionMessage] Next action in the hand to be taken in the current turn.
   def next_action
     if @turn_number
       @data[@turn_number].action_message
@@ -118,7 +135,7 @@ class HandData
       message_number += number_of_state_messages
 
       action_message = if action_data.in_bounds?(message_number) && 
-        action_data[message_number][:action]
+        action_data[message_number].respond_to?(:action)
 
         message_number += 1
         action_data[message_number-1]
@@ -136,15 +153,15 @@ class HandData
 
   def process_state_messages(state_messages)
     state_messages.inject([]) do |messages, raw_messages|
-      messages[raw_messages[:seat]] = raw_messages[:state]
+      messages[raw_messages.seat] = raw_messages.state
       messages
     end
   end
 
   def assert_messages_have_no_actions(state_messages)
-    if state_messages.any? { |message| !message[:action].nil? }
+    if state_messages.any? { |message| message.respond_to?(:action) }
       raise InvalidData, state_messages.find do |message| 
-        !message[:action].nil?
+        !message.action.nil?
       end.inspect
     end
   end
@@ -157,7 +174,7 @@ class HandData
 
   def assert_message_is_from_final_turn(action_data, message_number, state_messages)
     if action_data.in_bounds?(message_number+1) && 
-      state_messages.last.round == action_data[message_number+1][:state].round
+      state_messages.last.round == action_data[message_number+1].state.round
       raise InvalidData, action_data[message_number].inspect
     end
   end

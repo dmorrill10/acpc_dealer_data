@@ -14,9 +14,24 @@ class PokerMatchData
 
   exceptions :match_definitions_do_not_match, :final_scores_do_not_match, :player_data_inconsistent
 
-  attr_reader :chip_distribution, :match_def, :hand_number, :data, :players
-  attr_accessor :seat
+  attr_reader(
+    # @returns [Array<Numeric>] Chip distribution at the end of the match
+    :chip_distribution,
+    # @returns [MatchDefinition] Game definition and match parameters
+    :match_def,
+    # @returns [Integer] Zero-index turn number within the hand
+    :hand_number,
+    # @returns [HandData] Data from each hand
+    :data,
+    # @returns [Array<Player>] Player information
+    :players
+  )
+  attr_accessor(
+    # @returns [Integer] Seat of the active player
+    :seat
+  )
 
+  # @returns [PokerMatchData]
   def self.parse_files(action_messages_file, result_messages_file, player_names, dealer_directory)
     parsed_action_messages = Celluloid::Future.new { ActionMessages.parse_file action_messages_file, player_names, dealer_directory }
     parsed_hand_results = Celluloid::Future.new { HandResults.parse_file result_messages_file, player_names, dealer_directory }
@@ -24,11 +39,12 @@ class PokerMatchData
     PokerMatchData.new parsed_action_messages.value, parsed_hand_results.value, player_names, dealer_directory
   end
 
+  # @returns [PokerMatchData]
   def self.parse(action_messages, result_messages, player_names, dealer_directory)
-    parsed_action_messages = ActionMessages.parse action_messages, player_names, dealer_directory
-    parsed_hand_results = HandResults.parse result_messages, player_names, dealer_directory
+    parsed_action_messages = Celluloid::Future.new { ActionMessages.parse action_messages, player_names, dealer_directory }
+    parsed_hand_results = Celluloid::Future.new { HandResults.parse result_messages, player_names, dealer_directory }
 
-    PokerMatchData.new parsed_action_messages, parsed_hand_results, player_names, dealer_directory
+    PokerMatchData.new parsed_action_messages.value, parsed_hand_results.value, player_names, dealer_directory
   end
 
   def initialize(parsed_action_messages, parsed_hand_results, player_names, dealer_directory)
@@ -54,14 +70,10 @@ class PokerMatchData
 
     set_data! parsed_action_messages, parsed_hand_results
 
+    # Zero-indexed seat
     @seat = 0
-    @players = @match_def.player_names.length.times.map do |seat|
-      Player.join_match(
-        @match_def.player_names[seat], 
-        seat,
-        @match_def.game_def.chip_stacks[seat]
-      )
-    end
+
+    initialize_players!
   end
 
   def for_every_seat!
@@ -149,6 +161,16 @@ class PokerMatchData
   end
 
   protected
+
+  def initialize_players!
+    @players = @match_def.player_names.length.times.map do |seat|
+      Player.join_match(
+        @match_def.player_names[seat], 
+        seat,
+        @match_def.game_def.chip_stacks[seat]
+      )
+    end
+  end
 
   def set_chip_distribution!(final_score)
     @chip_distribution = []

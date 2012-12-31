@@ -6,23 +6,50 @@ require_relative 'match_definition'
 
 class ActionMessages
 
-  attr_reader :data, :final_score, :match_def
+  attr_reader(
+    :data, :final_score, :match_def
+  )
+    
+  ToMessage = Struct.new(
+    # @returns [Integer] Seat of the player receiving the message
+    :seat,
+    # @returns [MatchState] Match state received by the player
+    :state
+  )
 
+  FromMessage = Struct.new(
+    # @returns [Integer] Seat of the player acting
+    :seat,
+    # @returns [MatchState] Match state on which the action was taken
+    :state,
+    # @returns [PokerAction] Action taken
+    :action
+  )
+
+  # @param [String] to_message TO message (message to player)
   def self.parse_to_message(to_message)
     if to_message.strip.match(
       /^TO\s*(\d+)\s*at\s*[\d\.]+\s+(\S+)$/
     )
-      {seat: $1.to_i - 1, state: MatchState.parse($2)}
+      ToMessage.new(
+        $1.to_i - 1,
+        MatchState.parse($2)
+      )
     else
       nil
     end
   end
 
+  # @param [String] from_message FROM message (message from player)
   def self.parse_from_message(from_message)
     if from_message.strip.match(
 /^FROM\s*(\d+)\s*at\s*[\d\.]+\s*(#{MatchState::LABEL}\S+):([#{PokerAction::LEGAL_ACPC_CHARACTERS.to_a.join('')}]\s*\d*)$/
     )
-      {seat: $1.to_i - 1, state: MatchState.parse($2), action: PokerAction.new($3)}
+      FromMessage.new(
+        $1.to_i - 1, 
+        MatchState.parse($2), 
+        PokerAction.new($3)
+      )
     else
       nil
     end

@@ -24,13 +24,25 @@ describe ActionMessages do
     it 'properly parses a ACPC log "TO . . ." line' do
       [
         "TO 1 at 1341695999.222281 MATCHSTATE:0:0::5d5c|\n" =>
-          {seat: 0, state: MatchState.parse('MATCHSTATE:0:0::5d5c|')}, 
+          ActionMessages::ToMessage.new(
+            0,
+            MatchState.parse('MATCHSTATE:0:0::5d5c|')
+          ), 
         "TO 2 at 1341695920.914907 MATCHSTATE:1:0:r19686:|9hQd\n" =>
-          {seat: 1, state: MatchState.parse('MATCHSTATE:1:0:r19686:|9hQd')},
+          ActionMessages::ToMessage.new(
+            1,
+            MatchState.parse('MATCHSTATE:1:0:r19686:|9hQd')
+          ),
         "TO 3 at 1341696044.566738 MATCHSTATE:2:0:rf:||8dAs\n" =>
-          {seat: 2, state: MatchState.parse('MATCHSTATE:2:0:rf:||8dAs')},
+          ActionMessages::ToMessage.new(
+            2,
+            MatchState.parse('MATCHSTATE:2:0:rf:||8dAs')
+          ),
         "TO 1 at 1341715418.808925 MATCHSTATE:0:0:fcr17162:5d5c||\n" =>
-          {seat: 0, state: MatchState.parse('MATCHSTATE:0:0:fcr17162:5d5c||')}
+          ActionMessages::ToMessage.new(
+            0,
+            MatchState.parse('MATCHSTATE:0:0:fcr17162:5d5c||')
+          )
       ].each do |to_message_to_data|
         to_message_to_data.each do |to_message, expected_values|
           ActionMessages.parse_to_message(to_message).must_equal expected_values
@@ -46,29 +58,29 @@ describe ActionMessages do
     it 'properly parses a ACPC log "FROM . . ." line' do
       [
         "FROM 2 at 1341695999.222410 MATCHSTATE:1:0::|9hQd:c\n" =>
-          {
-            seat: 1, 
-            state: MatchState.parse('MATCHSTATE:1:0::|9hQd'),
-            action: PokerAction.new('c')
-          },
+          ActionMessages::FromMessage.new(
+            1, 
+            MatchState.parse('MATCHSTATE:1:0::|9hQd'),
+            PokerAction.new('c')
+          ),
         "FROM 1 at 1341695920.914935 MATCHSTATE:0:0:r19686:5d5c|:r20000\n" =>
-          {
-            seat: 0, 
-            state: MatchState.parse('MATCHSTATE:0:0:r19686:5d5c|'), 
-            action: PokerAction.new('r20000')
-          },
+          ActionMessages::FromMessage.new(
+            0, 
+            MatchState.parse('MATCHSTATE:0:0:r19686:5d5c|'), 
+            PokerAction.new('r20000')
+          ),
         "FROM 3 at 1341696044.566938 MATCHSTATE:2:0:rfr:||8dAs:r\n" =>
-          {
-            seat: 2, 
-            state: MatchState.parse('MATCHSTATE:2:0:rfr:||8dAs'), 
-            action: PokerAction.new('r')
-          },
+          ActionMessages::FromMessage.new(
+            2, 
+            MatchState.parse('MATCHSTATE:2:0:rfr:||8dAs'), 
+            PokerAction.new('r')
+          ),
         "FROM 2 at 1341715418.808896 MATCHSTATE:1:0:fc:|9hQd|:r17162\n" =>
-          {
-            seat: 1, 
-            state: MatchState.parse('MATCHSTATE:1:0:fc:|9hQd|'), 
-            action: PokerAction.new('r17162')
-          }
+          ActionMessages::FromMessage.new(
+            1, 
+            MatchState.parse('MATCHSTATE:1:0:fc:|9hQd|'), 
+            PokerAction.new('r17162')
+          )
       ].each do |from_message_to_data|
         from_message_to_data.each do |from_message, expected_values|
           ActionMessages.parse_from_message(from_message).must_equal expected_values
@@ -173,24 +185,42 @@ describe ActionMessages do
         ],
         data: [
           [
-            {seat: 0, state: MatchState.parse('MATCHSTATE:1:998:crc/cc/cc/:|TdQd/As6d6h/7h/4s')},
-            {seat: 1, state: MatchState.parse('MATCHSTATE:0:998:crc/cc/cc/:Jc8d|/As6d6h/7h/4s')}, 
-            {
-              seat: 1, 
-              state: MatchState.parse('MATCHSTATE:0:998:crc/cc/cc/:Jc8d|/As6d6h/7h/4s'),
-              action: PokerAction.new('r')
-            }
+            ActionMessages::ToMessage.new(
+              0,
+              MatchState.parse('MATCHSTATE:1:998:crc/cc/cc/:|TdQd/As6d6h/7h/4s')
+            ),
+            ActionMessages::ToMessage.new(
+              1,
+              MatchState.parse('MATCHSTATE:0:998:crc/cc/cc/:Jc8d|/As6d6h/7h/4s')
+            ), 
+            ActionMessages::FromMessage.new(
+              1, 
+              MatchState.parse('MATCHSTATE:0:998:crc/cc/cc/:Jc8d|/As6d6h/7h/4s'),
+              PokerAction.new('r')
+            )
           ],
           [
-            {seat: 0, state: MatchState.parse('MATCHSTATE:1:999:crc/cc/cc/r:|TdQd/As6d6h/7h/4s')},
-            {seat: 1, state: MatchState.parse('MATCHSTATE:0:999:crc/cc/cc/r:Jc8d|/As6d6h/7h/4s')},
-            {
-              seat: 0, 
-              state: MatchState.parse('MATCHSTATE:1:999:crc/cc/cc/r:|TdQd/As6d6h/7h/4s'),
-              action: PokerAction.new('c')
-            },
-            {seat: 0, state: MatchState.parse('MATCHSTATE:1:999:crc/cc/cc/rc:Jc8d|TdQd/As6d6h/7h/4s')},
-            {seat: 1, state: MatchState.parse('MATCHSTATE:0:999:crc/cc/cc/rc:Jc8d|TdQd/As6d6h/7h/4s')}
+            ActionMessages::ToMessage.new(
+              0,
+              MatchState.parse('MATCHSTATE:1:999:crc/cc/cc/r:|TdQd/As6d6h/7h/4s')
+            ),
+            ActionMessages::ToMessage.new(
+              1,
+              MatchState.parse('MATCHSTATE:0:999:crc/cc/cc/r:Jc8d|/As6d6h/7h/4s')
+            ),
+            ActionMessages::FromMessage.new(
+              0, 
+              MatchState.parse('MATCHSTATE:1:999:crc/cc/cc/r:|TdQd/As6d6h/7h/4s'),
+              PokerAction.new('c')
+            ),
+            ActionMessages::ToMessage.new(
+              0,
+              MatchState.parse('MATCHSTATE:1:999:crc/cc/cc/rc:Jc8d|TdQd/As6d6h/7h/4s')
+            ),
+            ActionMessages::ToMessage.new(
+              1,
+              MatchState.parse('MATCHSTATE:0:999:crc/cc/cc/rc:Jc8d|TdQd/As6d6h/7h/4s')
+            )
           ]
         ],
         final_score: {p1: 455, p2: -455},
@@ -214,26 +244,50 @@ describe ActionMessages do
         ],
         data: [
           [
-            {seat: 0, state: MatchState.parse('MATCHSTATE:0:998:cc/r5841r19996r20000:Kc6h|/QhAh8d')},
-            {seat: 1, state: MatchState.parse('MATCHSTATE:1:998:cc/r5841r19996r20000:|Qc3s/QhAh8d')}, 
-            {
-              seat: 1, 
-              state: MatchState.parse('MATCHSTATE:1:998:cc/r5841r19996r20000:|Qc3s/QhAh8d:c'),
-              action: PokerAction.new('c')
-            },
-            {seat: 0, state: MatchState.parse('MATCHSTATE:0:998:cc/r5841r19996r20000c//:Kc6h|Qc3s/QhAh8d/Th/9d')},
-            {seat: 1, state: MatchState.parse('MATCHSTATE:1:998:cc/r5841r19996r20000c//:Kc6h|Qc3s/QhAh8d/Th/9d')}
+            ActionMessages::ToMessage.new(
+              0, 
+              MatchState.parse('MATCHSTATE:0:998:cc/r5841r19996r20000:Kc6h|/QhAh8d')
+            ),
+            ActionMessages::ToMessage.new(
+              1,
+              MatchState.parse('MATCHSTATE:1:998:cc/r5841r19996r20000:|Qc3s/QhAh8d')
+            ), 
+            ActionMessages::FromMessage.new(
+              1, 
+              MatchState.parse('MATCHSTATE:1:998:cc/r5841r19996r20000:|Qc3s/QhAh8d:c'),
+              PokerAction.new('c')
+            ),
+            ActionMessages::ToMessage.new(
+              0,
+              MatchState.parse('MATCHSTATE:0:998:cc/r5841r19996r20000c//:Kc6h|Qc3s/QhAh8d/Th/9d')
+            ),
+            ActionMessages::ToMessage.new(
+              1,
+              MatchState.parse('MATCHSTATE:1:998:cc/r5841r19996r20000c//:Kc6h|Qc3s/QhAh8d/Th/9d')
+            )
           ],
           [
-            {seat: 0, state: MatchState.parse('MATCHSTATE:1:999::|TdQd')},
-            {seat: 1, state: MatchState.parse('MATCHSTATE:0:999::Jc8d|')},
-            {
-              seat: 0, 
-              state: MatchState.parse('MATCHSTATE:1:999::|TdQd'),
-              action: PokerAction.new('f')
-            },
-            {seat: 0, state: MatchState.parse('MATCHSTATE:1:999:f:|TdQd')},
-            {seat: 1, state: MatchState.parse('MATCHSTATE:0:999:f:Jc8d|')}
+            ActionMessages::ToMessage.new(
+              0,
+              MatchState.parse('MATCHSTATE:1:999::|TdQd')
+            ),
+            ActionMessages::ToMessage.new(
+              1,
+              MatchState.parse('MATCHSTATE:0:999::Jc8d|')
+            ),
+            ActionMessages::FromMessage.new(
+              0, 
+              MatchState.parse('MATCHSTATE:1:999::|TdQd'),
+              PokerAction.new('f')
+            ),
+            ActionMessages::ToMessage.new(
+              0,
+              MatchState.parse('MATCHSTATE:1:999:f:|TdQd')
+            ),
+            ActionMessages::ToMessage.new(
+              1,
+              MatchState.parse('MATCHSTATE:0:999:f:Jc8d|')
+            )
           ]
         ],
         final_score: {p1: -64658, p2: 64658},
@@ -254,17 +308,35 @@ describe ActionMessages do
         ],
         data: [
           [
-            {seat: 0, state: MatchState.parse('MATCHSTATE:0:999:ccc/ccc/rrcc/rrrfr:QsAs||/4d6d2d/5d/2c')},
-            {seat: 1, state: MatchState.parse('MATCHSTATE:1:999:ccc/ccc/rrcc/rrrfr:|3s8h|/4d6d2d/5d/2c')},
-            {seat: 2, state: MatchState.parse('MATCHSTATE:2:999:ccc/ccc/rrcc/rrrfr:||Qd3c/4d6d2d/5d/2c')},
-            {
-              seat: 2, 
-              state: MatchState.parse('MATCHSTATE:2:999:ccc/ccc/rrcc/rrrfr:||Qd3c/4d6d2d/5d/2c'),
-              action: PokerAction.new('c')
-            },
-            {seat: 0, state: MatchState.parse('MATCHSTATE:0:999:ccc/ccc/rrcc/rrrfrc:QsAs|3s8h|Qd3c/4d6d2d/5d/2c')},
-            {seat: 1, state: MatchState.parse('MATCHSTATE:1:999:ccc/ccc/rrcc/rrrfrc:|3s8h|Qd3c/4d6d2d/5d/2c')},
-            {seat: 2, state: MatchState.parse('MATCHSTATE:2:999:ccc/ccc/rrcc/rrrfrc:|3s8h|Qd3c/4d6d2d/5d/2c')}
+            ActionMessages::ToMessage.new(
+              0,
+              MatchState.parse('MATCHSTATE:0:999:ccc/ccc/rrcc/rrrfr:QsAs||/4d6d2d/5d/2c')
+            ),
+            ActionMessages::ToMessage.new(
+              1,
+              MatchState.parse('MATCHSTATE:1:999:ccc/ccc/rrcc/rrrfr:|3s8h|/4d6d2d/5d/2c')
+            ),
+            ActionMessages::ToMessage.new(
+              2,
+              MatchState.parse('MATCHSTATE:2:999:ccc/ccc/rrcc/rrrfr:||Qd3c/4d6d2d/5d/2c')
+            ),
+            ActionMessages::FromMessage.new(
+              2, 
+              MatchState.parse('MATCHSTATE:2:999:ccc/ccc/rrcc/rrrfr:||Qd3c/4d6d2d/5d/2c'),
+              PokerAction.new('c')
+            ),
+            ActionMessages::ToMessage.new(
+              0,
+              MatchState.parse('MATCHSTATE:0:999:ccc/ccc/rrcc/rrrfrc:QsAs|3s8h|Qd3c/4d6d2d/5d/2c')
+            ),
+            ActionMessages::ToMessage.new(
+              1,
+              MatchState.parse('MATCHSTATE:1:999:ccc/ccc/rrcc/rrrfrc:|3s8h|Qd3c/4d6d2d/5d/2c')
+            ),
+            ActionMessages::ToMessage.new(
+              2,
+              MatchState.parse('MATCHSTATE:2:999:ccc/ccc/rrcc/rrrfrc:|3s8h|Qd3c/4d6d2d/5d/2c')
+            )
           ]
         ],
         final_score: {p1: -4330, p2: 625, p3: 3705},
@@ -285,19 +357,37 @@ describe ActionMessages do
         ],
         data: [
           [
-            {seat: 0, state: MatchState.parse('MATCHSTATE:0:998:ccr12926r20000c:QsAs||')},
-            {seat: 1, state: MatchState.parse('MATCHSTATE:1:998:ccr12926r20000c:|3s8h|')},
-            {seat: 2, state: MatchState.parse('MATCHSTATE:2:998:ccr12926r20000c:||Qd3c')},
-            {
-              seat: 1, 
-              state: MatchState.parse('MATCHSTATE:1:998:ccr12926r20000c:|3s8h|'),
-              action: PokerAction.new('c')
-            }
+            ActionMessages::ToMessage.new(
+              0,
+              MatchState.parse('MATCHSTATE:0:998:ccr12926r20000c:QsAs||')
+            ),
+            ActionMessages::ToMessage.new(
+              1,
+              MatchState.parse('MATCHSTATE:1:998:ccr12926r20000c:|3s8h|')
+            ),
+            ActionMessages::ToMessage.new(
+              2,
+              MatchState.parse('MATCHSTATE:2:998:ccr12926r20000c:||Qd3c')
+            ),
+            ActionMessages::FromMessage.new(
+              1, 
+              MatchState.parse('MATCHSTATE:1:998:ccr12926r20000c:|3s8h|'),
+              PokerAction.new('c')
+            )
           ],
           [
-            {seat: 0, state: MatchState.parse('MATCHSTATE:0:999:ccr12926r20000cc///:QsAs|3s8h|Qd3c/4d6d2d/5d/2c')},
-            {seat: 1, state: MatchState.parse('MATCHSTATE:1:999:ccr12926r20000cc///:QsAs|3s8h|Qd3c/4d6d2d/5d/2c')},
-            {seat: 2, state: MatchState.parse('MATCHSTATE:2:999:ccr12926r20000cc///:QsAs|3s8h|Qd3c/4d6d2d/5d/2c')}
+            ActionMessages::ToMessage.new(
+              0,
+              MatchState.parse('MATCHSTATE:0:999:ccr12926r20000cc///:QsAs|3s8h|Qd3c/4d6d2d/5d/2c')
+            ),
+            ActionMessages::ToMessage.new(
+              1,
+              MatchState.parse('MATCHSTATE:1:999:ccr12926r20000cc///:QsAs|3s8h|Qd3c/4d6d2d/5d/2c')
+            ),
+            ActionMessages::ToMessage.new(
+              2,
+              MatchState.parse('MATCHSTATE:2:999:ccr12926r20000cc///:QsAs|3s8h|Qd3c/4d6d2d/5d/2c')
+            )
           ]
         ],
         final_score: {p1: 684452, p2: 552584.5, p3: -1237036.5},
