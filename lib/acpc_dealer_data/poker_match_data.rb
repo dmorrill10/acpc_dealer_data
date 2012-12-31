@@ -80,13 +80,7 @@ class PokerMatchData
     match_def.game_def.number_of_players.times do |seat|
       @seat = seat
 
-      @players = @match_def.player_names.length.times.map do |seat_j|
-        Player.join_match(
-          @match_def.player_names[seat_j], 
-          seat_j,
-          @match_def.game_def.chip_stacks[seat_j]
-        )
-      end
+      initialize_players!
 
       yield seat
     end
@@ -102,7 +96,9 @@ class PokerMatchData
   def all_in?(seat=@seat) @players[seat].all_in? end
   def active?(seat=@seat) @players[seat].active? end
 
-  def for_every_hand!
+  def for_every_hand!(num_hands=@data.length)
+    initialize_players!
+
     @data.each_index do |i|
       @hand_number = i
 
@@ -115,6 +111,8 @@ class PokerMatchData
       end
 
       yield @hand_number
+
+      break if @hand_number + 1 >= num_hands
     end
 
     if @chip_distribution != @players.map { |p| p.chip_balance }
@@ -170,6 +168,8 @@ class PokerMatchData
         @match_def.game_def.chip_stacks[seat]
       )
     end
+
+    self
   end
 
   def set_chip_distribution!(final_score)
