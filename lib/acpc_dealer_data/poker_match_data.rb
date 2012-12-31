@@ -115,7 +115,7 @@ class PokerMatchData
       break if @hand_number + 1 >= num_hands
     end
 
-    if @chip_distribution != @players.map { |p| p.chip_balance }
+    if @hand_number == @data.length && @chip_distribution != @players.map { |p| p.chip_balance }
       raise PlayerDataInconsistent, "chip distribution: #{@chip_distribution}, player balances: #{@players.map { |p| p.chip_balance }}"
     end
 
