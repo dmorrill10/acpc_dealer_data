@@ -81,15 +81,18 @@ class ActionMessages
     end
   end
 
-  def self.parse_file(acpc_log_file_path, player_names, game_def_directory)
-    File.open(acpc_log_file_path, 'r') do |file| 
-      ActionMessages.parse file, player_names, game_def_directory
+  class LogFile < File
+  end
+
+  def self.parse_file(acpc_log_file_path, player_names, game_def_directory, num_hands=nil)
+    LogFile.open(acpc_log_file_path, 'r') do |file| 
+      ActionMessages.parse file, player_names, game_def_directory, num_hands
     end
   end
 
   alias_new :parse
 
-  def initialize(acpc_log_statements, player_names, game_def_directory)
+  def initialize(acpc_log_statements, player_names, game_def_directory, num_hands=nil)
     @final_score = nil
     @match_def = nil
     @data = acpc_log_statements.inject([]) do |accumulating_data, log_line|
@@ -102,6 +105,7 @@ class ActionMessages
             accumulating_data.empty? || 
             accumulating_data.last.first[:state].hand_number != parsed_message[:state].hand_number
           )
+            break accumulating_data if accumulating_data.length == num_hands
             accumulating_data << []
           end
 

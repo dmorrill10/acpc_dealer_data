@@ -18,6 +18,7 @@ describe ActionMessages do
     @patient = nil
     @match_def = nil
     @player_names = nil
+    @no_final_score = false
   end
 
   describe '::parse_to_message' do
@@ -109,46 +110,96 @@ describe ActionMessages do
   end
 
   describe 'properly parses ACPC log statements' do
-    it 'from file' do
-      skip "Not sure how to test this easily when GameDefinition needs to open a file as well"
+    describe 'from file' do
+      it 'when every hand is desired' do
+        init_data do |action_messages|
+          file_name = 'file_name'
+          ActionMessages::LogFile.expects(:open).with(file_name, 'r').yields(
+            action_messages
+          ).returns(
+            ActionMessages.parse(
+              action_messages,
+              @player_names,
+              AcpcDealer::DEALER_DIRECTORY
+            )
+          )
 
-      init_data do |action_messages|
-        file_name = 'file_name'
-        File.expects(:open).with(file_name, 'r').yields(
-          action_messages
-        ).returns(
-          ActionMessages.parse(
+          @patient = ActionMessages.parse_file(
+            file_name,
+            @player_names,
+            AcpcDealer::DEALER_DIRECTORY
+          )
+
+          check_patient
+        end
+      end
+      it 'when a particular number of hands is desired' do
+        @no_final_score = true
+        num_hands = 1
+        init_data do |action_messages|
+          file_name = 'file_name'
+          ActionMessages::LogFile.expects(:open).with(file_name, 'r').yields(
+            action_messages
+          ).returns(
+            ActionMessages.parse(
+              action_messages,
+              @player_names,
+              AcpcDealer::DEALER_DIRECTORY,
+              num_hands
+            )
+          )
+
+          @patient = ActionMessages.parse_file(
+            file_name,
+            @player_names,
+            AcpcDealer::DEALER_DIRECTORY,
+            num_hands
+          )
+
+          # Fix data to check patient against
+          @final_score = nil
+          @data = @data[0..num_hands-1]
+
+          check_patient
+        end
+      end
+    end
+    describe 'from array' do
+      it 'when all hands are desired' do
+        init_data do |action_messages|
+          @patient = ActionMessages.parse(
             action_messages,
             @player_names,
             AcpcDealer::DEALER_DIRECTORY
           )
-        )
 
-        @patient = ActionMessages.parse_file(
-          file_name,
-          @player_names,
-          AcpcDealer::DEALER_DIRECTORY
-        )
-
-        check_patient
+          check_patient
+        end
       end
-    end
-    it 'from array' do
-      init_data do |action_messages|
-        @patient = ActionMessages.parse(
-          action_messages,
-          @player_names,
-          AcpcDealer::DEALER_DIRECTORY
-        )
+      it 'when a particular number of hands is desired' do
+        @no_final_score = true
+        num_hands = 1
+        init_data do |log_statements|
+          @patient = ActionMessages.parse(
+            log_statements,
+            @player_names,
+            AcpcDealer::DEALER_DIRECTORY,
+            num_hands
+          )
 
-        check_patient
+          # Fix data to check patient against
+          @final_score = nil
+          @data = @data[0..num_hands-1]
+
+          check_patient
+        end
       end
     end
   end
 
   def check_patient
     @patient.data.must_equal @data
-    @patient.final_score.must_equal @final_score    
+    @patient.final_score.must_equal @final_score unless @no_final_score 
     @patient.match_def.must_equal @match_def
   end
 

@@ -32,19 +32,57 @@ class PokerMatchData
   )
 
   # @returns [PokerMatchData]
-  def self.parse_files(action_messages_file, result_messages_file, player_names, dealer_directory)
-    parsed_action_messages = Celluloid::Future.new { ActionMessages.parse_file action_messages_file, player_names, dealer_directory }
-    parsed_hand_results = Celluloid::Future.new { HandResults.parse_file result_messages_file, player_names, dealer_directory }
+  def self.parse_files(action_messages_file, result_messages_file, player_names, dealer_directory, num_hands=nil)
+    parsed_action_messages = Celluloid::Future.new do
+      ActionMessages.parse_file(
+        action_messages_file, 
+        player_names, 
+        dealer_directory,
+        num_hands
+      )
+    end
+    parsed_hand_results = Celluloid::Future.new do 
+      HandResults.parse_file(
+        result_messages_file, 
+        player_names, 
+        dealer_directory,
+        num_hands
+      )
+    end
 
-    PokerMatchData.new parsed_action_messages.value, parsed_hand_results.value, player_names, dealer_directory
+    PokerMatchData.new(
+      parsed_action_messages.value, 
+      parsed_hand_results.value, 
+      player_names, 
+      dealer_directory
+    )
   end
 
   # @returns [PokerMatchData]
-  def self.parse(action_messages, result_messages, player_names, dealer_directory)
-    parsed_action_messages = Celluloid::Future.new { ActionMessages.parse action_messages, player_names, dealer_directory }
-    parsed_hand_results = Celluloid::Future.new { HandResults.parse result_messages, player_names, dealer_directory }
+  def self.parse(action_messages, result_messages, player_names, dealer_directory, num_hands=nil)
+    parsed_action_messages = Celluloid::Future.new do
+      ActionMessages.parse(
+        action_messages,
+        player_names,
+        dealer_directory,
+        num_hands
+      )
+    end
+    parsed_hand_results = Celluloid::Future.new do
+      HandResults.parse(
+        result_messages,
+        player_names,
+        dealer_directory,
+        num_hands
+      )
+    end
 
-    PokerMatchData.new parsed_action_messages.value, parsed_hand_results.value, player_names, dealer_directory
+    PokerMatchData.new(
+      parsed_action_messages.value,
+      parsed_hand_results.value,
+      player_names,
+      dealer_directory
+    )
   end
 
   def initialize(parsed_action_messages, parsed_hand_results, player_names, dealer_directory)
@@ -57,8 +95,6 @@ class PokerMatchData
     end
 
     if (
-      parsed_action_messages.final_score.nil? ||
-      parsed_hand_results.final_score.nil? ||
       parsed_action_messages.final_score != parsed_hand_results.final_score
     )
       raise FinalScoresDoNotMatch
@@ -66,7 +102,9 @@ class PokerMatchData
 
     @match_def = parsed_hand_results.match_def
 
-    set_chip_distribution! parsed_hand_results.final_score
+    if parsed_hand_results.final_score
+      set_chip_distribution! parsed_hand_results.final_score
+    end
 
     set_data! parsed_action_messages, parsed_hand_results
 
@@ -96,7 +134,7 @@ class PokerMatchData
   def all_in?(seat=@seat) @players[seat].all_in? end
   def active?(seat=@seat) @players[seat].active? end
 
-  def for_every_hand!(num_hands=@data.length)
+  def for_every_hand!
     initialize_players!
 
     @data.each_index do |i|
@@ -111,11 +149,9 @@ class PokerMatchData
       end
 
       yield @hand_number
-
-      break if @hand_number + 1 >= num_hands
     end
 
-    if @hand_number == @data.length && @chip_distribution != @players.map { |p| p.chip_balance }
+    if @chip_distribution && @chip_distribution != @players.map { |p| p.chip_balance }
       raise PlayerDataInconsistent, "chip distribution: #{@chip_distribution}, player balances: #{@players.map { |p| p.chip_balance }}"
     end
 

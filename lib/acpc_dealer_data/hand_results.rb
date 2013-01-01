@@ -41,15 +41,18 @@ class HandResults
     end
   end
 
-  def self.parse_file(acpc_log_file_path, player_names, game_def_directory)
-    File.open(acpc_log_file_path, 'r') do |file| 
-      HandResults.parse file, player_names, game_def_directory
+  class LogFile < File
+  end
+
+  def self.parse_file(acpc_log_file_path, player_names, game_def_directory, num_hands=nil)
+    LogFile.open(acpc_log_file_path, 'r') do |file| 
+      HandResults.parse file, player_names, game_def_directory, num_hands
     end
   end
 
   alias_new :parse
 
-  def initialize(acpc_log_statements, player_names, game_def_directory)
+  def initialize(acpc_log_statements, player_names, game_def_directory, num_hands=nil)
     @final_score = nil
     @match_def = nil
     
@@ -60,6 +63,7 @@ class HandResults
         parsed_message = HandResults.parse_state(log_line)
         if parsed_message
           accumulating_data << parsed_message
+          break accumulating_data if accumulating_data.length == num_hands
         else
           @final_score = HandResults.parse_score(log_line) unless @final_score
         end

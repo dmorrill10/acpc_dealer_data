@@ -22,6 +22,7 @@ describe PokerMatchData do
     @hand_number = nil
     @hand_data_list = nil
     @final_hand = nil
+    @no_chip_distribution = false
   end
 
   describe 'when given action and result messages' do
@@ -85,25 +86,53 @@ describe PokerMatchData do
         end
       end
     end
-    it 'works properly on every hand' do
-      init_data do |action_messages, result_messages|
+    describe 'works properly' do
+      it 'for every hand' do
+        init_data do |action_messages, result_messages|
 
-        @patient = PokerMatchData.parse(
-          action_messages, 
-          result_messages,
-          @player_names,
-          AcpcDealer::DEALER_DIRECTORY
-        )
-        @patient.seat = 0
+          @patient = PokerMatchData.parse(
+            action_messages, 
+            result_messages,
+            @player_names,
+            AcpcDealer::DEALER_DIRECTORY
+          )
+          @patient.seat = 0
 
-        @hand_number = 0
-        @patient.for_every_hand! do
-          @final_hand = @hand_number >= @hand_data_list.length - 1
-          @patient.for_every_turn! do
-            check_patient
+          @hand_number = 0
+          @patient.for_every_hand! do
+            @final_hand = @hand_number >= @hand_data_list.length - 1
+            @patient.for_every_turn! do
+              check_patient
+            end
+
+            @hand_number += 1
           end
+        end
+      end
+      it 'for a particular number of hands' do
+        num_hands = 1
+        @no_chip_distribution = true
+        init_data(num_hands) do |action_messages, result_messages|
+          @chip_distribution = nil
 
-          @hand_number += 1
+          @patient = PokerMatchData.parse(
+            action_messages, 
+            result_messages,
+            @player_names,
+            AcpcDealer::DEALER_DIRECTORY,
+            num_hands
+          )
+          @patient.seat = 0
+
+          @hand_number = 0
+          @patient.for_every_hand! do
+            @final_hand = @hand_number >= @hand_data_list.length - 1
+            @patient.for_every_turn! do
+              check_patient
+            end
+
+            @hand_number += 1
+          end
         end
       end
     end
@@ -111,13 +140,13 @@ describe PokerMatchData do
 
   def check_patient
     @patient.match_def.must_equal @match_def
-    @patient.chip_distribution.must_equal @chip_distribution
+    @patient.chip_distribution.must_equal @chip_distribution unless @no_chip_distribution
     @patient.hand_number.must_equal @hand_number
     @patient.current_hand.must_equal @hand_data_list[@hand_number]
     @patient.final_hand?.must_equal @final_hand
   end
 
-  def init_data
+  def init_data(num_hands=nil)
     data.each do |game, data_hash|
       @chip_distribution = data_hash[:chip_distribution]
       @match_def_line_index = data_hash[:match_def_line_index]
@@ -130,12 +159,14 @@ describe PokerMatchData do
       action_messages = ActionMessages.parse(
         data_hash[:action_messages],
         @player_names,
-        AcpcDealer::DEALER_DIRECTORY
+        AcpcDealer::DEALER_DIRECTORY,
+        num_hands
       )
       result_messages = HandResults.parse(
         data_hash[:result_messages],
         @player_names,
-        AcpcDealer::DEALER_DIRECTORY 
+        AcpcDealer::DEALER_DIRECTORY,
+        num_hands
       )
 
       @hand_data_list = []

@@ -16,6 +16,7 @@ describe HandResults do
     @final_score = nil
     @player_names = nil
     @match_def = nil
+    @no_final_score = false
   end
 
   describe '::parse_state' do
@@ -56,36 +57,96 @@ describe HandResults do
   end
 
   describe 'properly parses ACPC log statements' do
-    it 'from file' do
-      skip "Not sure how to test this easily when GameDefinition needs to open a file as well"
+    describe 'from file' do
+      it 'when every hand is desired' do
+        init_data do |log_statements|
+          file_name = 'file_name'
+          HandResults::LogFile.stubs(:open).with(file_name, 'r').yields(
+            log_statements
+          ).returns(
+            HandResults.parse(
+              log_statements,
+              @player_names,
+              AcpcDealer::DEALER_DIRECTORY
+            )
+          )
 
-      init_data do |log_statements|
-        file_name = 'file_name'
-        File.stubs(:open).with(file_name, 'r').yields(
-          log_statements
-        ).returns(HandResults.parse(log_statements))
+          @patient = HandResults.parse_file(
+            file_name,
+            @player_names,
+            AcpcDealer::DEALER_DIRECTORY
+          )
 
-        @patient = HandResults.parse_file file_name
+          check_patient
+        end
+      end
+      it 'when a particular number of hands is desired' do
+        @no_final_score = true
+        num_hands = 3
+        init_data do |log_statements|
+          file_name = 'file_name'
+          HandResults::LogFile.stubs(:open).with(file_name, 'r').yields(
+            log_statements
+          ).returns(
+            HandResults.parse(
+              log_statements,
+              @player_names,
+              AcpcDealer::DEALER_DIRECTORY,
+              num_hands
+            )
+          )
 
-        check_patient
+          @patient = HandResults.parse_file(
+            file_name,
+            @player_names,
+            AcpcDealer::DEALER_DIRECTORY,
+            num_hands
+          )
+
+          # Fix data to check patient against
+          @final_score = nil
+          @data = @data[0..num_hands-1]
+
+          check_patient
+        end
       end
     end
-    it 'from array' do
-      init_data do |log_statements|
-        @patient = HandResults.parse(
-          log_statements,
-          @player_names,
-          AcpcDealer::DEALER_DIRECTORY
-        )
+    describe 'from array' do
+      it 'when every hand is desired' do
+        init_data do |log_statements|
+          @patient = HandResults.parse(
+            log_statements,
+            @player_names,
+            AcpcDealer::DEALER_DIRECTORY
+          )
 
-        check_patient
+          check_patient
+        end
+      end
+      it 'when a particular number of hands is desired' do
+        @no_final_score = true
+        num_hands = 3
+        init_data do |log_statements|
+          @patient = HandResults.parse(
+            log_statements,
+            @player_names,
+            AcpcDealer::DEALER_DIRECTORY,
+            num_hands
+          )
+
+          # Fix data to check patient against
+          @final_score = nil
+          @data = @data[0..num_hands-1]
+
+          check_patient
+        end
       end
     end
   end
 
   def check_patient
     @patient.data.must_equal @data
-    @patient.final_score.must_equal @final_score
+    @patient.final_score.must_equal @final_score unless @no_final_score
     @patient.match_def.must_equal @match_def
   end
 
