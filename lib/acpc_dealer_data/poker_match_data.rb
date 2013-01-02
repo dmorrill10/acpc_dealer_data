@@ -187,16 +187,16 @@ class PokerMatchData
   end
 
   def player_acting_sequence
-    return nil unless @hand_number
-
     sequence = [[]]
     
-    return sequence if current_hand.turn_number < 1
+    if @hand_number.nil? || current_hand.turn_number.nil? || current_hand.turn_number < 1
+      return sequence
+    end
       
     turns_taken = current_hand.data[0..current_hand.turn_number-1]
     turns_taken.each_with_index do |turn, turn_index|
       next unless turn.action_message
-      
+
       sequence[turn.action_message.state.round] << turn.action_message.seat
 
       if (
