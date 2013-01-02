@@ -126,14 +126,8 @@ class PokerMatchData
     self
   end
 
-  def player_name(seat=@seat) @players[seat].name end
-  def chip_balance(seat=@seat) @players[seat].chip_balance end
-  def hole_cards(seat=@seat) @players[seat].hole_cards end
-  def actions_taken_this_hand(seat=@seat) @players[seat].actions_taken_this_hand end
-  def folded?(seat=@seat) @players[seat].folded? end
-  def all_in?(seat=@seat) @players[seat].all_in? end
-  def active?(seat=@seat) @players[seat].active? end
-
+  def player(seat=@seat) @players[seat] end
+  
   def for_every_hand!
     initialize_players!
 
@@ -166,6 +160,7 @@ class PokerMatchData
         match_state = current_hand.current_match_state(seat)
 
         if current_hand.last_action && player.seat == current_hand.last_action.seat
+
           player.take_action!(current_hand.last_action.action)
         end
 
@@ -201,7 +196,7 @@ class PokerMatchData
 
       if (
         new_round?(sequence.length - 1 , turn_index) ||
-        players_all_in?(sequence.length - 1, turn_index)
+        players_all_in?(sequence.length - 1, turn_index, turns_taken)
       )
         sequence << []
       end
@@ -216,6 +211,21 @@ class PokerMatchData
 
   def final_hand?
     if @hand_number then @hand_number >= @data.length - 1 else nil end
+  end
+
+  # @return [Array<ChipStack>] Player stacks.
+  def chip_stacks
+    @players.map { |player| player.chip_stack }
+  end
+
+  # return [Array<Integer>] Each player's current chip balance.
+  def chip_balances
+    @players.map { |player| player.chip_balance }
+  end
+
+  # return [Array<Array<Integer>>] Each player's current chip contribution organized by round.
+  def chip_contributions
+    @players.map { |player| player.chip_contributions }
   end
 
   protected
@@ -260,10 +270,9 @@ class PokerMatchData
 
   private
 
-  def players_all_in?(current_round, turn_index)
+  def players_all_in?(current_round, turn_index, turns_taken)
     current_hand.data.length == turn_index + 2 &&
-    current_round < (@match_def.game_def.number_of_rounds - 1) && 
-    turn.action_message &&
+    current_round < (@match_def.game_def.number_of_rounds - 1) &&
     (turns_taken[0..turn_index].count do |t| 
       t.action_message.action.to_sym == :fold 
     end) != @players.length - 1
