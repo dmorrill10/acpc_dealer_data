@@ -100,9 +100,13 @@ describe PokerMatchData do
 
           @hand_number = 0
           @patient.for_every_hand! do
+            @turn_number = 0
+
             @final_hand = @hand_number >= @hand_data_list.length - 1
             @patient.for_every_turn! do
               check_patient
+
+              @turn_number += 1
             end
 
             @hand_number += 1
@@ -126,9 +130,13 @@ describe PokerMatchData do
 
           @hand_number = 0
           @patient.for_every_hand! do
+            @turn_number = 0
+
             @final_hand = @hand_number >= @hand_data_list.length - 1
             @patient.for_every_turn! do
               check_patient
+
+              @turn_number += 1
             end
 
             @hand_number += 1
@@ -144,6 +152,7 @@ describe PokerMatchData do
     @patient.hand_number.must_equal @hand_number
     @patient.current_hand.must_equal @hand_data_list[@hand_number]
     @patient.final_hand?.must_equal @final_hand
+    @patient.player_acting_sequence.must_equal @player_acting_sequences[@hand_number] if @turn_number + 1 == @hand_data_list[@hand_number].data.length
   end
 
   def init_data(num_hands=nil)
@@ -177,6 +186,8 @@ describe PokerMatchData do
           hand_result
         )
       end
+
+      @player_acting_sequences = data_hash[:player_acting_sequences]
        
       yield data_hash[:action_messages], data_hash[:result_messages]
     end
@@ -267,7 +278,8 @@ describe PokerMatchData do
         hand_start_line_indices: [6, 35],
         match_def_line_index: 0,
         player_names: ['p1', 'p2'],
-        chip_distribution: [110, -110]
+        chip_distribution: [110, -110],
+        player_acting_sequences: [[[1, 0], [0, 1, 0], [0, 1], [0, 1]], [[0, 1, 0], [1, 0], [1, 0, 1], [1, 0]]]
       }
     }
   end

@@ -142,8 +142,8 @@ class PokerMatchData
 
       @players.each_with_index do |player, seat|
         player.start_new_hand!(
-          @match_def.game_def.blinds[@seat],
-          @match_def.game_def.chip_stacks[@seat],
+          @match_def.game_def.blinds[seat],
+          @match_def.game_def.chip_stacks[seat],
           current_hand.data.first.state_messages[seat].users_hole_cards
         )
       end
@@ -165,8 +165,8 @@ class PokerMatchData
         last_match_state = current_hand.last_match_state(seat)
         match_state = current_hand.current_match_state(seat)
 
-        if current_hand.next_action && player.seat == current_hand.next_action[:seat]
-          player.take_action!(current_hand.next_action[:action])
+        if current_hand.last_action && player.seat == current_hand.last_action.seat
+          player.take_action!(current_hand.last_action.action)
         end
 
         if !match_state.first_state_of_first_round? && match_state.round > last_match_state.round
@@ -175,7 +175,7 @@ class PokerMatchData
 
         if current_hand.final_turn?
           player.take_winnings!(
-            current_hand.chip_distribution[seat] + @match_def.game_def.blinds[@seat]
+            current_hand.chip_distribution[seat] + @match_def.game_def.blinds[seat]
           )
         end
       end
@@ -184,6 +184,30 @@ class PokerMatchData
     end
 
     self
+  end
+
+  def player_acting_sequence
+    return nil unless @hand_number
+
+    sequence = [[]]
+    
+    return sequence if current_hand.turn_number < 1
+      
+    turns_taken = current_hand.data[0..current_hand.turn_number-1]
+    turns_taken.each_with_index do |turn, turn_index|
+      next unless turn.action_message
+      
+      sequence[turn.action_message.state.round] << turn.action_message.seat
+
+      if (
+        new_round?(sequence.length - 1 , turn_index) ||
+        players_all_in?(sequence.length - 1, turn_index)
+      )
+        sequence << []
+      end
+    end
+
+    sequence
   end
 
   def current_hand
@@ -232,5 +256,22 @@ class PokerMatchData
     end
 
     self
+  end
+
+  private
+
+  def players_all_in?(current_round, turn_index)
+    current_hand.data.length == turn_index + 2 &&
+    current_round < (@match_def.game_def.number_of_rounds - 1) && 
+    turn.action_message &&
+    (turns_taken[0..turn_index].count do |t| 
+      t.action_message.action.to_sym == :fold 
+    end) != @players.length - 1
+  end
+
+  def new_round?(current_round, turn_index)
+    current_hand.data.length > turn_index + 1 &&
+    current_hand.data[turn_index + 1].action_message &&
+    current_hand.data[turn_index + 1].action_message.state.round > current_round
   end
 end
