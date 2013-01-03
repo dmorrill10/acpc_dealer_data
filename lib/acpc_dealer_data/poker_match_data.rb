@@ -136,8 +136,8 @@ class PokerMatchData
 
       @players.each_with_index do |player, seat|
         player.start_new_hand!(
-          @match_def.game_def.blinds[seat],
-          @match_def.game_def.chip_stacks[seat],
+          @match_def.game_def.blinds[current_hand.data.first.state_messages[seat].position_relative_to_dealer],
+          @match_def.game_def.chip_stacks[current_hand.data.first.state_messages[seat].position_relative_to_dealer],
           current_hand.data.first.state_messages[seat].users_hole_cards
         )
       end
@@ -164,13 +164,17 @@ class PokerMatchData
           player.take_action!(current_hand.last_action.action)
         end
 
-        if !match_state.first_state_of_first_round? && match_state.round > last_match_state.round
+        if (
+          player.active? &&
+          !match_state.first_state_of_first_round? && 
+          match_state.round > last_match_state.round
+        )
           player.start_new_round!
         end
 
         if current_hand.final_turn?
           player.take_winnings!(
-            current_hand.chip_distribution[seat] + @match_def.game_def.blinds[seat]
+            current_hand.chip_distribution[seat] + @match_def.game_def.blinds[current_hand.current_match_state(seat).position_relative_to_dealer]
           )
         end
       end
@@ -228,6 +232,37 @@ class PokerMatchData
     @players.map { |player| player.chip_contributions }
   end
 
+  def opponents
+    @players.reject { |other_player| player == other_player }
+  end
+  def active_players
+    @players.select { |player_to_collect| player_to_collect.active? }
+  end
+  def non_folded_players
+    @players.reject { |player_to_reject| player_to_reject.folded? }
+  end
+  def opponents_cards_visible?
+    return false unless current_hand
+    
+    current_hand.current_match_state.list_of_hole_card_hands.reject_empty_elements.length > 1
+  end
+  def player_with_dealer_button
+    return nil unless current_hand
+
+    @players.find do |plr|
+      current_hand.current_match_state(plr.seat).position_relative_to_dealer == @players.length - 1
+    end
+  end
+  # @return [Hash<Player, #to_i] Relation from player to the blind that player paid.
+  def player_blind_relation
+    return nil unless current_hand
+
+    @players.inject({}) do |relation, plr|
+      relation[player] = @match_def.game_def.blinds[current_hand.current_match_state(plr.seat).position_relative_to_dealer]
+      relation
+    end
+  end
+  
   protected
 
   def initialize_players!

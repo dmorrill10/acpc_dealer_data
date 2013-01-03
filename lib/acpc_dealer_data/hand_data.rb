@@ -29,7 +29,7 @@ class HandData
 
   # State messages are organized by seat
   Turn = Struct.new(
-    # @returns [Array<MatchState>] Match states sent during this turn
+    # @returns [Array<MatchState>] Match states sent during this turn arranged by seat
     :state_messages,
     # @returns [ActionMessages::FromMessage] Action message sent during this turn
     :action_message
