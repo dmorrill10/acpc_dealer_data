@@ -258,7 +258,7 @@ class PokerMatchData
     return nil unless current_hand
 
     @players.inject({}) do |relation, plr|
-      relation[player] = @match_def.game_def.blinds[current_hand.current_match_state(plr.seat).position_relative_to_dealer]
+      relation[plr] = @match_def.game_def.blinds[current_hand.current_match_state(plr.seat).position_relative_to_dealer]
       relation
     end
   end
