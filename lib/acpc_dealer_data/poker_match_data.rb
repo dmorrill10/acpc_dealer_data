@@ -188,7 +188,11 @@ class PokerMatchData
   def player_acting_sequence
     sequence = [[]]
     
-    if @hand_number.nil? || current_hand.turn_number.nil? || current_hand.turn_number < 1
+    if (
+      @hand_number.nil? || 
+      current_hand.turn_number.nil? || 
+      current_hand.turn_number < 1
+    )
       return sequence
     end
       
@@ -262,6 +266,55 @@ class PokerMatchData
       relation
     end
   end
+
+  # @todo Untested
+  # @return [String] player acting sequence as a string.
+  def player_acting_sequence_string
+    (player_acting_sequence.map { |per_round| per_round.join('') }).join('/')
+  end
+  def users_turn_to_act?
+    return false unless current_hand && current_hand.next_action
+    current_hand.next_action.seat == @seat
+  end
+  def betting_sequence
+    sequence = [[]]
+    
+    if (
+      @hand_number.nil? || 
+      current_hand.turn_number.nil? || 
+      current_hand.turn_number < 1
+    )
+      return sequence
+    end
+      
+    turns_taken = current_hand.data[0..current_hand.turn_number-1]
+    turns_taken.each_with_index do |turn, turn_index|
+      next unless turn.action_message
+
+      sequence[turn.action_message.state.round] << turn.action_message.action
+
+      if (
+        new_round?(sequence.length - 1 , turn_index) ||
+        players_all_in?(sequence.length - 1, turn_index, turns_taken)
+      )
+        sequence << []
+      end
+    end
+
+    sequence
+  end
+  def betting_sequence_string
+    (betting_sequence.map do |per_round|
+       (per_round.map{|action| action.to_acpc}).join('')
+    end).join('/')
+  end
+  # @todo Test and implement this
+  # def min_wager
+  #   return nil unless current_hand
+
+  #   @match_def.game_def.min_wagers[current_hand.next_state.round]
+  #   ChipStack.new [@min_wager.to_i, action_with_context.amount_to_put_in_pot.to_i].max
+  # end
   
   protected
 
