@@ -11,7 +11,7 @@ Gem::Specification.new do |gem|
   gem.add_dependency 'acpc_dealer'
   gem.add_dependency 'acpc_poker_types'
   gem.add_dependency 'celluloid'
-  gem.add_dependency 'dmorrill10-utils', '~>1.0.0'
+  gem.add_dependency 'dmorrill10-utils', '>=1.0.0'
 
   
   gem.add_development_dependency 'mocha'
