@@ -2,7 +2,7 @@
 # Spec helper (must include first to track code coverage with SimpleCov)
 require File.expand_path('../support/spec_helper', __FILE__)
 
-require 'mocha'
+require 'mocha/setup'
 
 require 'acpc_dealer'
 
@@ -61,8 +61,14 @@ describe HandResults do
       it 'when every hand is desired' do
         init_data do |log_statements|
           file_name = 'file_name'
-          HandResults::LogFile.stubs(:readlines).with(file_name).returns(
+          HandResults::LogFile.stubs(:open).with(file_name, 'r').yields(
             log_statements
+          ).returns(
+            HandResults.parse(
+              log_statements,
+              @player_names,
+              AcpcDealer::DEALER_DIRECTORY
+            )
           )
 
           @patient = HandResults.parse_file(
@@ -79,8 +85,15 @@ describe HandResults do
         num_hands = 3
         init_data do |log_statements|
           file_name = 'file_name'
-          HandResults::LogFile.stubs(:readlines).with(file_name).returns(
+          HandResults::LogFile.stubs(:open).with(file_name, 'r').yields(
             log_statements
+          ).returns(
+            HandResults.parse(
+              log_statements,
+              @player_names,
+              AcpcDealer::DEALER_DIRECTORY,
+              num_hands
+            )
           )
 
           @patient = HandResults.parse_file(

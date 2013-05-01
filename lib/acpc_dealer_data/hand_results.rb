@@ -44,22 +44,8 @@ class HandResults
   end
 
   def self.parse_file(acpc_log_file_path, player_names, game_def_directory, num_hands=nil)
-    log_lines = LogFile.readlines(acpc_log_file_path)
-    if num_hands
-      HandResults.parse(
-        log_lines[0..num_hands+num_comment_lines(log_lines)-1],
-        player_names,
-        game_def_directory
-      )
-    else
-      HandResults.parse log_lines, player_names, game_def_directory
-    end
-  end
-
-  def self.num_comment_lines(array)
-    array.inject(0) do |count, line|
-      break count if parse_state(line) || parse_score(line)
-      count += 1
+    LogFile.open(acpc_log_file_path, 'r') do |file|
+      HandResults.parse file, player_names, game_def_directory, num_hands
     end
   end
 
