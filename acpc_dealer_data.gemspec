@@ -13,10 +13,12 @@ Gem::Specification.new do |gem|
   gem.add_dependency 'celluloid'
   gem.add_dependency 'dmorrill10-utils', '>=1.0.0'
 
-  
+
   gem.add_development_dependency 'mocha'
   gem.add_development_dependency 'simplecov'
   gem.add_development_dependency 'turn'
+  gem.add_development_dependency 'pry-rescue'
+  gem.add_development_dependency 'awesome_print'
 
   gem.files         = `git ls-files`.split($\)
   gem.executables   = gem.files.grep(%r{^bin/}).map{ |f| File.basename(f) }

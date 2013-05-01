@@ -2,7 +2,7 @@
 # Spec helper (must include first to track code coverage with SimpleCov)
 require_relative 'support/spec_helper'
 
-require 'mocha'
+require 'mocha/setup'
 
 require 'acpc_dealer'
 require 'acpc_poker_types/match_state'
@@ -28,7 +28,7 @@ describe ActionMessages do
           ActionMessages::ToMessage.new(
             0,
             MatchState.parse('MATCHSTATE:0:0::5d5c|')
-          ), 
+          ),
         "TO 2 at 1341695920.914907 MATCHSTATE:1:0:r19686:|9hQd\n" =>
           ActionMessages::ToMessage.new(
             1,
@@ -60,26 +60,26 @@ describe ActionMessages do
       [
         "FROM 2 at 1341695999.222410 MATCHSTATE:1:0::|9hQd:c\n" =>
           ActionMessages::FromMessage.new(
-            1, 
+            1,
             MatchState.parse('MATCHSTATE:1:0::|9hQd'),
             PokerAction.new('c')
           ),
         "FROM 1 at 1341695920.914935 MATCHSTATE:0:0:r19686:5d5c|:r20000\n" =>
           ActionMessages::FromMessage.new(
-            0, 
-            MatchState.parse('MATCHSTATE:0:0:r19686:5d5c|'), 
+            0,
+            MatchState.parse('MATCHSTATE:0:0:r19686:5d5c|'),
             PokerAction.new('r20000')
           ),
         "FROM 3 at 1341696044.566938 MATCHSTATE:2:0:rfr:||8dAs:r\n" =>
           ActionMessages::FromMessage.new(
-            2, 
-            MatchState.parse('MATCHSTATE:2:0:rfr:||8dAs'), 
+            2,
+            MatchState.parse('MATCHSTATE:2:0:rfr:||8dAs'),
             PokerAction.new('r')
           ),
         "FROM 2 at 1341715418.808896 MATCHSTATE:1:0:fc:|9hQd|:r17162\n" =>
           ActionMessages::FromMessage.new(
-            1, 
-            MatchState.parse('MATCHSTATE:1:0:fc:|9hQd|'), 
+            1,
+            MatchState.parse('MATCHSTATE:1:0:fc:|9hQd|'),
             PokerAction.new('r17162')
           )
       ].each do |from_message_to_data|
@@ -199,7 +199,7 @@ describe ActionMessages do
 
   def check_patient
     @patient.data.must_equal @data
-    @patient.final_score.must_equal @final_score unless @no_final_score 
+    @patient.final_score.must_equal @final_score unless @no_final_score
     @patient.match_def.must_equal @match_def
   end
 
@@ -213,7 +213,7 @@ describe ActionMessages do
         @player_names,
         AcpcDealer::DEALER_DIRECTORY
       )
-        
+
       yield data_hash[:action_messages]
     end
   end
@@ -243,9 +243,9 @@ describe ActionMessages do
             ActionMessages::ToMessage.new(
               1,
               MatchState.parse('MATCHSTATE:0:998:crc/cc/cc/:Jc8d|/As6d6h/7h/4s')
-            ), 
+            ),
             ActionMessages::FromMessage.new(
-              1, 
+              1,
               MatchState.parse('MATCHSTATE:0:998:crc/cc/cc/:Jc8d|/As6d6h/7h/4s'),
               PokerAction.new('r')
             )
@@ -260,7 +260,7 @@ describe ActionMessages do
               MatchState.parse('MATCHSTATE:0:999:crc/cc/cc/r:Jc8d|/As6d6h/7h/4s')
             ),
             ActionMessages::FromMessage.new(
-              0, 
+              0,
               MatchState.parse('MATCHSTATE:1:999:crc/cc/cc/r:|TdQd/As6d6h/7h/4s'),
               PokerAction.new('c')
             ),
@@ -296,15 +296,15 @@ describe ActionMessages do
         data: [
           [
             ActionMessages::ToMessage.new(
-              0, 
+              0,
               MatchState.parse('MATCHSTATE:0:998:cc/r5841r19996r20000:Kc6h|/QhAh8d')
             ),
             ActionMessages::ToMessage.new(
               1,
               MatchState.parse('MATCHSTATE:1:998:cc/r5841r19996r20000:|Qc3s/QhAh8d')
-            ), 
+            ),
             ActionMessages::FromMessage.new(
-              1, 
+              1,
               MatchState.parse('MATCHSTATE:1:998:cc/r5841r19996r20000:|Qc3s/QhAh8d:c'),
               PokerAction.new('c')
             ),
@@ -327,7 +327,7 @@ describe ActionMessages do
               MatchState.parse('MATCHSTATE:0:999::Jc8d|')
             ),
             ActionMessages::FromMessage.new(
-              0, 
+              0,
               MatchState.parse('MATCHSTATE:1:999::|TdQd'),
               PokerAction.new('f')
             ),
@@ -372,7 +372,7 @@ describe ActionMessages do
               MatchState.parse('MATCHSTATE:2:999:ccc/ccc/rrcc/rrrfr:||Qd3c/4d6d2d/5d/2c')
             ),
             ActionMessages::FromMessage.new(
-              2, 
+              2,
               MatchState.parse('MATCHSTATE:2:999:ccc/ccc/rrcc/rrrfr:||Qd3c/4d6d2d/5d/2c'),
               PokerAction.new('c')
             ),
@@ -421,7 +421,7 @@ describe ActionMessages do
               MatchState.parse('MATCHSTATE:2:998:ccr12926r20000c:||Qd3c')
             ),
             ActionMessages::FromMessage.new(
-              1, 
+              1,
               MatchState.parse('MATCHSTATE:1:998:ccr12926r20000c:|3s8h|'),
               PokerAction.new('c')
             )

@@ -23,7 +23,7 @@ describe HandResults do
     it 'properly parses a ACPC log "STATE. . ." line' do
       [
         "STATE:0:rc/rrrrc/rc/crrrc:5d5c|9hQd/8dAs8s/4h/6d:28|-28:p1|p2\n" =>
-          {p1: 28, p2: -28}, 
+          {p1: 28, p2: -28},
         "STATE:9:cc/cc/r165c/cc:4cKh|Kd7d/Ah9h9c/6s/Ks:0|0:p1|p2\n" =>
           {p1: 0, p2: 0},
         "STATE:18:rfrrc/cc/rrc/rrrrc:5d5c|9hQd|8dAs/8s4h6d/5s/Js:-5|-160|165:p1|p2|p3\n" =>
@@ -61,14 +61,8 @@ describe HandResults do
       it 'when every hand is desired' do
         init_data do |log_statements|
           file_name = 'file_name'
-          HandResults::LogFile.stubs(:open).with(file_name, 'r').yields(
+          HandResults::LogFile.stubs(:readlines).with(file_name).returns(
             log_statements
-          ).returns(
-            HandResults.parse(
-              log_statements,
-              @player_names,
-              AcpcDealer::DEALER_DIRECTORY
-            )
           )
 
           @patient = HandResults.parse_file(
@@ -85,15 +79,8 @@ describe HandResults do
         num_hands = 3
         init_data do |log_statements|
           file_name = 'file_name'
-          HandResults::LogFile.stubs(:open).with(file_name, 'r').yields(
+          HandResults::LogFile.stubs(:readlines).with(file_name).returns(
             log_statements
-          ).returns(
-            HandResults.parse(
-              log_statements,
-              @player_names,
-              AcpcDealer::DEALER_DIRECTORY,
-              num_hands
-            )
           )
 
           @patient = HandResults.parse_file(
@@ -160,7 +147,7 @@ describe HandResults do
         @player_names,
         AcpcDealer::DEALER_DIRECTORY
       )
-        
+
       yield data_hash[:log_statements]
     end
   end

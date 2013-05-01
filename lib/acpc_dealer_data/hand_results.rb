@@ -2,8 +2,10 @@
 require 'dmorrill10-utils/class'
 
 require_relative 'match_definition'
+require_relative 'shared'
 
 class HandResults
+  include Shared
 
   attr_reader :data, :final_score, :match_def
 
@@ -11,10 +13,10 @@ class HandResults
     if state_string.strip.match(
       /^STATE:\d+:[cfr\d\/]+:[^:]+:([\d\-\.|]+):([\w|]+)$/
       )
-       
+
       stack_changes = $1.split '|'
       players = $2.split '|'
-         
+
       players.each_index.inject({}) do |player_results, j|
          player_results[players[j].to_sym] = stack_changes[j].to_r
          player_results
@@ -28,10 +30,10 @@ class HandResults
     if score_string.strip.match(
       /^SCORE:([\d\-\.|]+):([\w|]+)$/
       )
-       
+
       stack_changes = $1.split '|'
       players = $2.split '|'
-         
+
       players.each_index.inject({}) do |player_results, j|
          player_results[players[j].to_sym] = stack_changes[j].to_r
          player_results
@@ -41,12 +43,23 @@ class HandResults
     end
   end
 
-  class LogFile < File
+  def self.parse_file(acpc_log_file_path, player_names, game_def_directory, num_hands=nil)
+    log_lines = LogFile.readlines(acpc_log_file_path)
+    if num_hands
+      HandResults.parse(
+        log_lines[0..num_hands+num_comment_lines(log_lines)-1],
+        player_names,
+        game_def_directory
+      )
+    else
+      HandResults.parse log_lines, player_names, game_def_directory
+    end
   end
 
-  def self.parse_file(acpc_log_file_path, player_names, game_def_directory, num_hands=nil)
-    LogFile.open(acpc_log_file_path, 'r') do |file| 
-      HandResults.parse file, player_names, game_def_directory, num_hands
+  def self.num_comment_lines(array)
+    array.inject(0) do |count, line|
+      break count if parse_state(line) || parse_score(line)
+      count += 1
     end
   end
 
@@ -55,7 +68,7 @@ class HandResults
   def initialize(acpc_log_statements, player_names, game_def_directory, num_hands=nil)
     @final_score = nil
     @match_def = nil
-    
+
     @data = acpc_log_statements.inject([]) do |accumulating_data, log_line|
       if @match_def.nil?
         @match_def = MatchDefinition.parse(log_line, player_names, game_def_directory)
@@ -68,7 +81,7 @@ class HandResults
           @final_score = HandResults.parse_score(log_line) unless @final_score
         end
       end
-      
+
       accumulating_data
     end
   end
