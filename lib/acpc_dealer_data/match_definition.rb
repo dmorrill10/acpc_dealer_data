@@ -5,7 +5,7 @@ require 'acpc_poker_types/game_definition'
 
 require 'dmorrill10-utils/class'
 
-class MatchDefinition
+class AcpcDealerData::MatchDefinition
 
   exceptions :unable_to_parse, :incorrect_number_of_player_names
 
@@ -14,19 +14,15 @@ class MatchDefinition
   def self.parse(acpc_log_string, player_names, game_def_directory)
     if acpc_log_string.strip.match(
       '^\s*#\s*name/game/hands/seed\s+(\S+)\s+(\S+)\s+(\d+)\s+(\d+)\s*$'
-      )
+    )
       name = $1
-      game_def = GameDefinition.parse_file(File.join(game_def_directory, File.basename($2)))
+      game_def = GameDefinition.parse_file(
+        File.join(game_def_directory, File.basename($2))
+      )
       number_of_hands = $3
       random_seed = $4
 
-      MatchDefinition.new(
-        name,
-        game_def, 
-        number_of_hands, 
-        random_seed, 
-        player_names
-      )
+      new(name, game_def, number_of_hands, random_seed, player_names)
     else
       nil
     end

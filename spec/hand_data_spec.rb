@@ -2,18 +2,18 @@
 # Spec helper (must include first to track code coverage with SimpleCov)
 require_relative 'support/spec_helper'
 
-require 'mocha'
+require 'mocha/setup'
 
 require 'acpc_dealer'
 require 'acpc_poker_types/match_state'
 require 'acpc_poker_types/poker_action'
 
-require_relative '../lib/acpc_dealer_data/action_messages'
-require_relative '../lib/acpc_dealer_data/hand_data'
-require_relative '../lib/acpc_dealer_data/hand_results'
-require_relative '../lib/acpc_dealer_data/match_definition'
+require 'acpc_dealer_data/action_messages'
+require 'acpc_dealer_data/hand_data'
+require 'acpc_dealer_data/hand_results'
+require 'acpc_dealer_data/match_definition'
 
-describe HandData do
+describe AcpcDealerData::HandData do
   before do
     @patient = nil
     @chip_distribution = nil
@@ -31,20 +31,20 @@ describe HandData do
   describe 'raises an exception' do
     it 'if the given action data does not have the proper format' do
       init_data do |action_data, result|
-        ->() do 
-          @patient = HandData.new(
-            @match_def, 
-            (action_data.data.first + [action_data.data.first.last]).flatten, 
+        ->() do
+          @patient = AcpcDealerData::HandData.new(
+            @match_def,
+            (action_data.data.first + [action_data.data.first.last]).flatten,
             result.data.first
           )
-        end.must_raise HandData::InvalidData
+        end.must_raise AcpcDealerData::HandData::InvalidData
       end
     end
   end
 
   it 'reports the chip distribution for every seat' do
     init_data do |action_data, result|
-      @patient = HandData.new @match_def, action_data.data.first, result.data.first
+      @patient = AcpcDealerData::HandData.new @match_def, action_data.data.first, result.data.first
 
       check_patient
     end
@@ -61,7 +61,7 @@ describe HandData do
         @last_action = nil
         @next_action = nil
 
-        @patient = HandData.new @match_def, action_data.data.first, result.data.first
+        @patient = AcpcDealerData::HandData.new @match_def, action_data.data.first, result.data.first
 
         @turn_number = 0
         @patient.for_every_turn!(@seat) do
@@ -98,18 +98,18 @@ describe HandData do
     data.each do |game, data_hash|
       @chip_distribution = data_hash[:chip_distribution]
       @turn_data = data_hash[:turn_data]
-      @action_data = ActionMessages.parse(
+      @action_data = AcpcDealerData::ActionMessages.parse(
         data_hash[:action_messages],
         data_hash[:player_names],
         AcpcDealer::DEALER_DIRECTORY
       )
-      @hand_result = HandResults.parse(
+      @hand_result = AcpcDealerData::HandResults.parse(
         data_hash[:result_message],
         data_hash[:player_names],
         AcpcDealer::DEALER_DIRECTORY
       )
       @match_def = @hand_result.match_def
-        
+
       yield @action_data, @hand_result
     end
   end
@@ -137,29 +137,29 @@ describe HandData do
         chip_distribution: [60, -60],
         player_names:  ['p1', 'p2'],
         turn_data: [
-          HandData::Turn.new(
+          AcpcDealerData::HandData::Turn.new(
             [
               MatchState.parse('MATCHSTATE:1:999:crc/cc/cc/:|TdQd/As6d6h/7h/4s'),
               MatchState.parse('MATCHSTATE:0:999:crc/cc/cc/:Jc8d|/As6d6h/7h/4s')
             ],
-            ActionMessages::FromMessage.new(
-              1, 
+            AcpcDealerData::ActionMessages::FromMessage.new(
+              1,
               MatchState.parse('MATCHSTATE:0:999:crc/cc/cc/:Jc8d|/As6d6h/7h/4s'),
               PokerAction.new('r')
             )
           ),
-          HandData::Turn.new(
+          AcpcDealerData::HandData::Turn.new(
             [
               MatchState.parse('MATCHSTATE:1:999:crc/cc/cc/r:|TdQd/As6d6h/7h/4s'),
               MatchState.parse('MATCHSTATE:0:999:crc/cc/cc/r:Jc8d|/As6d6h/7h/4s')
             ],
-            ActionMessages::FromMessage.new(
-              0, 
+            AcpcDealerData::ActionMessages::FromMessage.new(
+              0,
               MatchState.parse('MATCHSTATE:1:999:crc/cc/cc/r:|TdQd/As6d6h/7h/4s'),
               PokerAction.new('c')
             )
           ),
-          HandData::Turn.new(
+          AcpcDealerData::HandData::Turn.new(
             [
               MatchState.parse('MATCHSTATE:1:999:crc/cc/cc/rc:Jc8d|TdQd/As6d6h/7h/4s'),
               MatchState.parse('MATCHSTATE:0:999:crc/cc/cc/rc:Jc8d|TdQd/As6d6h/7h/4s')
@@ -186,18 +186,18 @@ describe HandData do
         chip_distribution: [19718, -19718],
         player_names:  ['p1', 'p2'],
         turn_data: [
-          HandData::Turn.new(
+          AcpcDealerData::HandData::Turn.new(
             [
               MatchState.parse('MATCHSTATE:1:999::|TdQd'),
               MatchState.parse('MATCHSTATE:0:999::Jc8d|')
             ],
-            ActionMessages::FromMessage.new(
-              0, 
+            AcpcDealerData::ActionMessages::FromMessage.new(
+              0,
               MatchState.parse('MATCHSTATE:1:999::|TdQd'),
               PokerAction.new('f')
             )
           ),
-          HandData::Turn.new(
+          AcpcDealerData::HandData::Turn.new(
             [
               MatchState.parse('MATCHSTATE:1:999:f:|TdQd'),
               MatchState.parse('MATCHSTATE:0:999:f:Jc8d|')
@@ -226,19 +226,19 @@ describe HandData do
         chip_distribution: [360, -190, -170],
         player_names:  ['p1', 'p2', 'p3'],
         turn_data: [
-          HandData::Turn.new(
+          AcpcDealerData::HandData::Turn.new(
             [
               MatchState.parse('MATCHSTATE:0:999:ccc/ccc/rrcc/rrrfr:QsAs||/4d6d2d/5d/2c'),
               MatchState.parse('MATCHSTATE:1:999:ccc/ccc/rrcc/rrrfr:|3s8h|/4d6d2d/5d/2c'),
               MatchState.parse('MATCHSTATE:2:999:ccc/ccc/rrcc/rrrfr:||Qd3c/4d6d2d/5d/2c')
             ],
-            ActionMessages::FromMessage.new(
-              2, 
+            AcpcDealerData::ActionMessages::FromMessage.new(
+              2,
               MatchState.parse('MATCHSTATE:2:999:ccc/ccc/rrcc/rrrfr:||Qd3c/4d6d2d/5d/2c'),
               PokerAction.new('c')
             )
           ),
-          HandData::Turn.new(
+          AcpcDealerData::HandData::Turn.new(
             [
               MatchState.parse('MATCHSTATE:0:999:ccc/ccc/rrcc/rrrfrc:QsAs|3s8h|Qd3c/4d6d2d/5d/2c'),
               MatchState.parse('MATCHSTATE:1:999:ccc/ccc/rrcc/rrrfrc:|3s8h|Qd3c/4d6d2d/5d/2c'),
@@ -268,19 +268,19 @@ describe HandData do
         chip_distribution: [40000, -20000, -20000],
         player_names:  ['p1', 'p2', 'p3'],
         turn_data: [
-          HandData::Turn.new(
+          AcpcDealerData::HandData::Turn.new(
             [
               MatchState.parse('MATCHSTATE:0:999:ccr12926r20000c:QsAs||'),
               MatchState.parse('MATCHSTATE:1:999:ccr12926r20000c:|3s8h|'),
               MatchState.parse('MATCHSTATE:2:999:ccr12926r20000c:||Qd3c')
             ],
-            ActionMessages::FromMessage.new(
+            AcpcDealerData::ActionMessages::FromMessage.new(
               1,
               MatchState.parse('MATCHSTATE:1:999:ccr12926r20000c:|3s8h|'),
               PokerAction.new('c')
             )
           ),
-          HandData::Turn.new(
+          AcpcDealerData::HandData::Turn.new(
             [
               MatchState.parse('MATCHSTATE:0:999:ccr12926r20000cc///:QsAs|3s8h|Qd3c/4d6d2d/5d/2c'),
               MatchState.parse('MATCHSTATE:1:999:ccr12926r20000cc///:QsAs|3s8h|Qd3c/4d6d2d/5d/2c'),

@@ -21,7 +21,7 @@ class AcpcDealerData::PokerMatchData
     :match_def,
     # @returns [Integer] Zero-index turn number within the hand
     :hand_number,
-    # @returns [HandData] Data from each hand
+    # @returns [AcpcDealerData::HandData] Data from each hand
     :data,
     # @returns [Array<Player>] Player information
     :players,
@@ -32,7 +32,7 @@ class AcpcDealerData::PokerMatchData
   # @returns [AcpcDealerData::PokerMatchData]
   def self.parse_files(action_messages_file, result_messages_file, player_names, dealer_directory, num_hands=nil)
     parsed_action_messages = Celluloid::Future.new do
-      ActionMessages.parse_file(
+      AcpcDealerData::ActionMessages.parse_file(
         action_messages_file,
         player_names,
         dealer_directory,
@@ -40,7 +40,7 @@ class AcpcDealerData::PokerMatchData
       )
     end
     parsed_hand_results = Celluloid::Future.new do
-      HandResults.parse_file(
+      AcpcDealerData::HandResults.parse_file(
         result_messages_file,
         player_names,
         dealer_directory,
@@ -65,7 +65,7 @@ class AcpcDealerData::PokerMatchData
     num_hands=nil
   )
     parsed_action_messages = Celluloid::Future.new do
-      ActionMessages.parse(
+      AcpcDealerData::ActionMessages.parse(
         action_messages,
         player_names,
         dealer_directory,
@@ -73,7 +73,7 @@ class AcpcDealerData::PokerMatchData
       )
     end
     parsed_hand_results = Celluloid::Future.new do
-      HandResults.parse(
+      AcpcDealerData::HandResults.parse(
         result_messages,
         player_names,
         dealer_directory,
@@ -356,7 +356,7 @@ class AcpcDealerData::PokerMatchData
   def set_data!(parsed_action_messages, parsed_hand_results)
     @data = []
     parsed_action_messages.data.zip(parsed_hand_results.data).each do |action_messages_by_hand, hand_result|
-      @data << HandData.new(
+      @data << AcpcDealerData::HandData.new(
         @match_def,
         action_messages_by_hand,
         hand_result

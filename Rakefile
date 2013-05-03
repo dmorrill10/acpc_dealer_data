@@ -8,5 +8,5 @@ Rake::TestTask.new do |t|
   t.libs << "lib" << 'spec/support'
   t.test_files = FileList['spec/**/*_spec.rb']
   t.verbose = true
-  t.warning = true
+  t.warning = false # pry-rescue has a lot of warnings
 end

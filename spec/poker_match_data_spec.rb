@@ -248,7 +248,7 @@ describe AcpcDealerData::PokerMatchData do
       @chip_distribution = data_hash[:chip_distribution]
       @match_def_line_index = data_hash[:match_def_line_index]
       @player_names = data_hash[:player_names]
-      @match_def = MatchDefinition.parse(
+      @match_def = AcpcDealerData::MatchDefinition.parse(
         data_hash[:result_messages][@match_def_line_index],
         @player_names,
         AcpcDealer::DEALER_DIRECTORY
@@ -263,13 +263,13 @@ describe AcpcDealerData::PokerMatchData do
   end
 
   def init_expected!(data_hash, num_hands=nil, match_def=@match_def)
-    action_messages = ActionMessages.parse(
+    action_messages = AcpcDealerData::ActionMessages.parse(
       data_hash[:action_messages],
       @player_names,
       AcpcDealer::DEALER_DIRECTORY,
       num_hands
     )
-    result_messages = HandResults.parse(
+    result_messages = AcpcDealerData::HandResults.parse(
       data_hash[:result_messages],
       @player_names,
       AcpcDealer::DEALER_DIRECTORY,
@@ -279,7 +279,7 @@ describe AcpcDealerData::PokerMatchData do
     @hand_data_list = []
     action_messages.data.zip(result_messages.data)
       .each do |action_messages_by_hand, hand_result|
-      @hand_data_list << HandData.new(
+      @hand_data_list << AcpcDealerData::HandData.new(
         match_def,
         action_messages_by_hand,
         hand_result

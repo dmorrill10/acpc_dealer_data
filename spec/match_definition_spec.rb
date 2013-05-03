@@ -1,13 +1,13 @@
 
 # Spec helper (must include first to track code coverage with SimpleCov)
-require File.expand_path('../support/spec_helper', __FILE__)
+require_relative 'support/spec_helper'
 
 require 'acpc_poker_types/game_definition'
 require 'acpc_dealer'
 
-require File.expand_path('../../lib/acpc_dealer_data/match_definition', __FILE__)
+require 'acpc_dealer_data/match_definition'
 
-describe MatchDefinition do
+describe AcpcDealerData::MatchDefinition do
   before do
     @name = nil
     @game_def = nil
@@ -20,53 +20,53 @@ describe MatchDefinition do
   it 'raises an exception if the number of player names does not match the number of players' do
     init_components do
       ->() do
-        @patient = MatchDefinition.new(
-          @name, 
-          @game_def, 
-          @number_of_hands, 
-          @random_seed, 
+        @patient = AcpcDealerData::MatchDefinition.new(
+          @name,
+          @game_def,
+          @number_of_hands,
+          @random_seed,
           @player_names + ['extra player']
         )
-      end.must_raise MatchDefinition::IncorrectNumberOfPlayerNames
+      end.must_raise AcpcDealerData::MatchDefinition::IncorrectNumberOfPlayerNames
 
       ->() do
-        @patient = MatchDefinition.new(
-          @name, 
-          @game_def, 
-          @number_of_hands, 
-          @random_seed, 
+        @patient = AcpcDealerData::MatchDefinition.new(
+          @name,
+          @game_def,
+          @number_of_hands,
+          @random_seed,
           [@player_names.first]
         )
-      end.must_raise MatchDefinition::IncorrectNumberOfPlayerNames
+      end.must_raise AcpcDealerData::MatchDefinition::IncorrectNumberOfPlayerNames
     end
   end
 
   describe 'can be created by providing components' do
     it 'separately' do
       init_components do
-        @patient = MatchDefinition.new(
-          @name, 
-          @game_def, 
-          @number_of_hands, 
-          @random_seed, 
+        @patient = AcpcDealerData::MatchDefinition.new(
+          @name,
+          @game_def,
+          @number_of_hands,
+          @random_seed,
           @player_names
         )
-        
+
         check_patient
       end
     end
     it 'in string format "# name/game/hands/seed ..."' do
       init_components do
         string = "# name/game/hands/seed #{@name} #{@game_def_file_name} #{@number_of_hands} #{@random_seed}\n"
-        @patient = MatchDefinition.parse(string, @player_names, File.dirname(@game_def_file_name))
-        
+        @patient = AcpcDealerData::MatchDefinition.parse(string, @player_names, File.dirname(@game_def_file_name))
+
         check_patient
       end
     end
   end
   it 'returns nil if asked to parse an improperly formatted string' do
     string = 'improperly formatted string'
-    @patient = MatchDefinition.parse(string, ['p1', 'p2'], 'game def directory').must_be_nil
+    @patient = AcpcDealerData::MatchDefinition.parse(string, ['p1', 'p2'], 'game def directory').must_be_nil
   end
 
   def init_components

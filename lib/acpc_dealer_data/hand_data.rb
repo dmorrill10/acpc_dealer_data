@@ -1,7 +1,7 @@
 
 require 'dmorrill10-utils/class'
 
-require_relative 'match_definition'
+require 'acpc_dealer_data/match_definition'
 
 # Monkey patch for easy boundary checking
 class Array
@@ -10,7 +10,7 @@ class Array
   end
 end
 
-class HandData
+class AcpcDealerData::HandData
 
   exceptions :match_definitions_do_not_match, :invalid_data
 

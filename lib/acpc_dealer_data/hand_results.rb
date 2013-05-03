@@ -1,12 +1,10 @@
 
 require 'dmorrill10-utils/class'
 
-require_relative 'match_definition'
-require_relative 'shared'
+require 'acpc_dealer_data/match_definition'
+require 'acpc_dealer_data/log_file'
 
-class HandResults
-  include Shared
-
+class AcpcDealerData::HandResults
   attr_reader :data, :final_score, :match_def
 
   def self.parse_state(state_string)
@@ -43,9 +41,14 @@ class HandResults
     end
   end
 
-  def self.parse_file(acpc_log_file_path, player_names, game_def_directory, num_hands=nil)
-    LogFile.open(acpc_log_file_path, 'r') do |file|
-      HandResults.parse file, player_names, game_def_directory, num_hands
+  def self.parse_file(
+    acpc_log_file_path,
+    player_names,
+    game_def_directory,
+    num_hands=nil
+  )
+    AcpcDealerData::LogFile.open(acpc_log_file_path, 'r') do |file|
+      AcpcDealerData::HandResults.parse file, player_names, game_def_directory, num_hands
     end
   end
 
@@ -57,14 +60,14 @@ class HandResults
 
     @data = acpc_log_statements.inject([]) do |accumulating_data, log_line|
       if @match_def.nil?
-        @match_def = MatchDefinition.parse(log_line, player_names, game_def_directory)
+        @match_def = AcpcDealerData::MatchDefinition.parse(log_line, player_names, game_def_directory)
       else
-        parsed_message = HandResults.parse_state(log_line)
+        parsed_message = AcpcDealerData::HandResults.parse_state(log_line)
         if parsed_message
           accumulating_data << parsed_message
           break accumulating_data if accumulating_data.length == num_hands
         else
-          @final_score = HandResults.parse_score(log_line) unless @final_score
+          @final_score = AcpcDealerData::HandResults.parse_score(log_line) unless @final_score
         end
       end
 

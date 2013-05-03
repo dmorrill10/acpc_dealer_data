@@ -2,12 +2,10 @@
 require 'acpc_poker_types/match_state'
 require 'acpc_poker_types/poker_action'
 
-require_relative 'match_definition'
-require_relative 'shared'
+require 'acpc_dealer_data/match_definition'
+require 'acpc_dealer_data/log_file'
 
-class ActionMessages
-  include Shared
-
+class AcpcDealerData::ActionMessages
   attr_reader(
     :data, :final_score, :match_def
   )
@@ -42,10 +40,12 @@ class ActionMessages
     end
   end
 
+  CONCATONATED_ACTIONS = PokerAction::LEGAL_ACPC_CHARACTERS.to_a.join('')
+
   # @param [String] from_message FROM message (message from player)
   def self.parse_from_message(from_message)
     if from_message.strip.match(
-/^FROM\s*(\d+)\s*at\s*[\d\.]+\s*(#{MatchState::LABEL}\S+):([#{PokerAction::LEGAL_ACPC_CHARACTERS.to_a.join('')}]\s*\d*)$/
+/^FROM\s*(\d+)\s*at\s*[\d\.]+\s*(#{MatchState::LABEL}\S+):([#{CONCATONATED_ACTIONS}]\s*\d*)$/
     )
       FromMessage.new(
         $1.to_i - 1,
@@ -75,17 +75,22 @@ class ActionMessages
   end
 
   def self.parse_to_or_from_message(message)
-    parsed_message = ActionMessages.parse_to_message(message)
+    parsed_message = AcpcDealerData::ActionMessages.parse_to_message(message)
     if parsed_message.nil?
-      ActionMessages.parse_from_message(message)
+      AcpcDealerData::ActionMessages.parse_from_message(message)
     else
       parsed_message
     end
   end
 
-  def self.parse_file(acpc_log_file_path, player_names, game_def_directory, num_hands=nil)
-    LogFile.open(acpc_log_file_path, 'r') do |file|
-      ActionMessages.parse file, player_names, game_def_directory, num_hands
+  def self.parse_file(
+    acpc_log_file_path,
+    player_names,
+    game_def_directory,
+    num_hands=nil
+  )
+    AcpcDealerData::LogFile.open(acpc_log_file_path, 'r') do |file|
+      AcpcDealerData::ActionMessages.parse file, player_names, game_def_directory, num_hands
     end
   end
 
@@ -101,9 +106,9 @@ class ActionMessages
     @match_def = nil
     @data = acpc_log_statements.inject([]) do |accumulating_data, log_line|
       if @match_def.nil?
-        @match_def = MatchDefinition.parse(log_line, player_names, game_def_directory)
+        @match_def = AcpcDealerData::MatchDefinition.parse(log_line, player_names, game_def_directory)
       else
-        parsed_message = ActionMessages.parse_to_or_from_message(log_line)
+        parsed_message = AcpcDealerData::ActionMessages.parse_to_or_from_message(log_line)
         if parsed_message
           if (
             accumulating_data.empty? ||
@@ -116,7 +121,7 @@ class ActionMessages
 
           accumulating_data.last << parsed_message
         else
-          @final_score = ActionMessages.parse_score(log_line) unless @final_score
+          @final_score = AcpcDealerData::ActionMessages.parse_score(log_line) unless @final_score
         end
       end
 
