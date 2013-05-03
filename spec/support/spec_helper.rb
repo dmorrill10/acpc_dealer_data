@@ -3,11 +3,10 @@ require 'simplecov'
 SimpleCov.start
 
 require 'minitest/spec'
-require 'minitest/autorun'
 require 'minitest/pride'
 
 begin
-  require 'turn/autorun'
+  require 'turn'
 
   Turn.config do |c|
     # use one of output formats:
@@ -17,7 +16,7 @@ begin
     # :pretty   - new pretty reporter
     # :marshal  - dump output as YAML (normal run mode only)
     # :cue      - interactive testing
-    c.format  = :pretty
+    c.format  = :dotted
     # use humanized test names (works only with :outline format)
     c.natural = true
   end

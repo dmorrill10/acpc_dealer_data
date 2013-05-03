@@ -14,11 +14,11 @@ class HandData
 
   exceptions :match_definitions_do_not_match, :invalid_data
 
-  attr_reader(
+  attr_accessor(
     # @returns [Array<Numeric>] Chip distribution at the end of the hand
     :chip_distribution,
     # @returns [MatchDefinition] Game definition and match parameters
-    :match_def, 
+    :match_def,
     # @returns [Integer] Zero-index turn number within the hand
     :turn_number,
     # @returns [Turn] Turn data
@@ -37,7 +37,7 @@ class HandData
 
   def initialize(match_def, action_data, result)
     @match_def = match_def
-    
+
     set_chip_distribution! result
 
     set_data! action_data
@@ -134,7 +134,7 @@ class HandData
 
       message_number += number_of_state_messages
 
-      action_message = if action_data.in_bounds?(message_number) && 
+      action_message = if action_data.in_bounds?(message_number) &&
         action_data[message_number].respond_to?(:action)
 
         message_number += 1
@@ -160,7 +160,7 @@ class HandData
 
   def assert_messages_have_no_actions(state_messages)
     if state_messages.any? { |message| message.respond_to?(:action) }
-      raise InvalidData, state_messages.find do |message| 
+      raise InvalidData, state_messages.find do |message|
         !message.action.nil?
       end.inspect
     end
@@ -173,7 +173,7 @@ class HandData
   end
 
   def assert_message_is_from_final_turn(action_data, message_number, state_messages)
-    if action_data.in_bounds?(message_number+1) && 
+    if action_data.in_bounds?(message_number+1) &&
       state_messages.last.round == action_data[message_number+1].state.round
       raise InvalidData, action_data[message_number].inspect
     end

@@ -8,17 +8,17 @@ Gem::Specification.new do |gem|
   gem.summary       = %q{Gem to parse, manipulate, and use data from the ACPC Dealer program.}
   gem.homepage      = "https://github.com/dmorrill10/acpc_dealer_data"
 
-  gem.add_dependency 'acpc_dealer'
-  gem.add_dependency 'acpc_poker_types'
-  gem.add_dependency 'celluloid'
-  gem.add_dependency 'dmorrill10-utils', '>=1.0.0'
+  gem.add_dependency 'acpc_dealer', '~> 0.0'
+  gem.add_dependency 'acpc_poker_types', '~> 0.0'
+  gem.add_dependency 'celluloid', '~> 0.13'
+  gem.add_dependency 'dmorrill10-utils', '~> 1.0'
 
-
-  gem.add_development_dependency 'mocha'
-  gem.add_development_dependency 'simplecov'
-  gem.add_development_dependency 'turn'
-  gem.add_development_dependency 'pry-rescue'
-  gem.add_development_dependency 'awesome_print'
+  gem.add_development_dependency 'minitest', '~> 4.7'
+  gem.add_development_dependency 'mocha', '~> 0.13'
+  gem.add_development_dependency 'simplecov', '~> 0.7'
+  gem.add_development_dependency 'turn', '~> 0.9'
+  gem.add_development_dependency 'pry-rescue', '~> 1.1'
+  gem.add_development_dependency 'awesome_print', '~> 1.1'
 
   gem.files         = `git ls-files`.split($\)
   gem.executables   = gem.files.grep(%r{^bin/}).map{ |f| File.basename(f) }

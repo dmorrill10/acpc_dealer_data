@@ -5,16 +5,16 @@ require 'celluloid'
 
 require 'dmorrill10-utils/class'
 
-require_relative 'action_messages'
-require_relative 'hand_data'
-require_relative 'hand_results'
-require_relative 'match_definition'
+require 'acpc_dealer_data/action_messages'
+require 'acpc_dealer_data/hand_data'
+require 'acpc_dealer_data/hand_results'
+require 'acpc_dealer_data/match_definition'
 
-class PokerMatchData
+class AcpcDealerData::PokerMatchData
 
   exceptions :match_definitions_do_not_match, :final_scores_do_not_match, :player_data_inconsistent
 
-  attr_reader(
+  attr_accessor(
     # @returns [Array<Numeric>] Chip distribution at the end of the match
     :chip_distribution,
     # @returns [MatchDefinition] Game definition and match parameters
@@ -24,42 +24,46 @@ class PokerMatchData
     # @returns [HandData] Data from each hand
     :data,
     # @returns [Array<Player>] Player information
-    :players
-  )
-  attr_accessor(
+    :players,
     # @returns [Integer] Seat of the active player
     :seat
   )
 
-  # @returns [PokerMatchData]
+  # @returns [AcpcDealerData::PokerMatchData]
   def self.parse_files(action_messages_file, result_messages_file, player_names, dealer_directory, num_hands=nil)
     parsed_action_messages = Celluloid::Future.new do
       ActionMessages.parse_file(
-        action_messages_file, 
-        player_names, 
+        action_messages_file,
+        player_names,
         dealer_directory,
         num_hands
       )
     end
-    parsed_hand_results = Celluloid::Future.new do 
+    parsed_hand_results = Celluloid::Future.new do
       HandResults.parse_file(
-        result_messages_file, 
-        player_names, 
+        result_messages_file,
+        player_names,
         dealer_directory,
         num_hands
       )
     end
 
-    PokerMatchData.new(
-      parsed_action_messages.value, 
-      parsed_hand_results.value, 
-      player_names, 
+    new(
+      parsed_action_messages.value,
+      parsed_hand_results.value,
+      player_names,
       dealer_directory
     )
   end
 
-  # @returns [PokerMatchData]
-  def self.parse(action_messages, result_messages, player_names, dealer_directory, num_hands=nil)
+  # @returns [AcpcDealerData::PokerMatchData]
+  def self.parse(
+    action_messages,
+    result_messages,
+    player_names,
+    dealer_directory,
+    num_hands=nil
+  )
     parsed_action_messages = Celluloid::Future.new do
       ActionMessages.parse(
         action_messages,
@@ -77,7 +81,7 @@ class PokerMatchData
       )
     end
 
-    PokerMatchData.new(
+    new(
       parsed_action_messages.value,
       parsed_hand_results.value,
       player_names,
@@ -85,7 +89,12 @@ class PokerMatchData
     )
   end
 
-  def initialize(parsed_action_messages, parsed_hand_results, player_names, dealer_directory)
+  def initialize(
+    parsed_action_messages,
+    parsed_hand_results,
+    player_names,
+    dealer_directory
+  )
     if (
       parsed_action_messages.match_def.nil? ||
       parsed_hand_results.match_def.nil? ||
@@ -127,7 +136,7 @@ class PokerMatchData
   end
 
   def player(seat=@seat) @players[seat] end
-  
+
   def for_every_hand!
     initialize_players!
 
@@ -166,7 +175,7 @@ class PokerMatchData
 
         if (
           player.active? &&
-          !match_state.first_state_of_first_round? && 
+          !match_state.first_state_of_first_round? &&
           match_state.round > last_match_state.round
         )
           player.start_new_round!
@@ -185,27 +194,28 @@ class PokerMatchData
     self
   end
 
+  def match_has_another_round?(current_round, turn_index, turns_taken)
+    new_round?(current_round, turn_index) ||
+    players_all_in?(current_round, turn_index, turns_taken)
+  end
+
+  def hand_started?
+    @hand_number &&
+    current_hand.turn_number &&
+    current_hand.turn_number > 0
+  end
+
   def player_acting_sequence
     sequence = [[]]
-    
-    if (
-      @hand_number.nil? || 
-      current_hand.turn_number.nil? || 
-      current_hand.turn_number < 1
-    )
-      return sequence
-    end
-      
+
+    return sequence unless hand_started?
+
     turns_taken = current_hand.data[0..current_hand.turn_number-1]
     turns_taken.each_with_index do |turn, turn_index|
       next unless turn.action_message
 
       sequence[turn.action_message.state.round] << turn.action_message.seat
-
-      if (
-        new_round?(sequence.length - 1 , turn_index) ||
-        players_all_in?(sequence.length - 1, turn_index, turns_taken)
-      )
+      if match_has_another_round?(sequence.length - 1, turn_index, turns_taken)
         sequence << []
       end
     end
@@ -247,7 +257,7 @@ class PokerMatchData
   end
   def opponents_cards_visible?
     return false unless current_hand
-    
+
     current_hand.current_match_state.list_of_hole_card_hands.reject_empty_elements.length > 1
   end
   def player_with_dealer_button
@@ -278,15 +288,15 @@ class PokerMatchData
   end
   def betting_sequence
     sequence = [[]]
-    
+
     if (
-      @hand_number.nil? || 
-      current_hand.turn_number.nil? || 
+      @hand_number.nil? ||
+      current_hand.turn_number.nil? ||
       current_hand.turn_number < 1
     )
       return sequence
     end
-      
+
     turns_taken = current_hand.data[0..current_hand.turn_number-1]
     turns_taken.each_with_index do |turn, turn_index|
       next unless turn.action_message
@@ -315,13 +325,13 @@ class PokerMatchData
   #   @match_def.game_def.min_wagers[current_hand.next_state.round]
   #   ChipStack.new [@min_wager.to_i, action_with_context.amount_to_put_in_pot.to_i].max
   # end
-  
+
   protected
 
   def initialize_players!
     @players = @match_def.player_names.length.times.map do |seat|
       Player.join_match(
-        @match_def.player_names[seat], 
+        @match_def.player_names[seat],
         seat,
         @match_def.game_def.chip_stacks[seat]
       )
@@ -361,8 +371,9 @@ class PokerMatchData
   def players_all_in?(current_round, turn_index, turns_taken)
     current_hand.data.length == turn_index + 2 &&
     current_round < (@match_def.game_def.number_of_rounds - 1) &&
-    (turns_taken[0..turn_index].count do |t| 
-      t.action_message.action.to_sym == :fold 
+    (turns_taken[0..turn_index].count do |t|
+      # @todo Use FOLD constant instead once poker action has one
+      t.action_message.action.to_acpc_character == 'f'
     end) != @players.length - 1
   end
 
