@@ -1,7 +1,7 @@
 
 require 'acpc_poker_types/player'
 
-require 'celluloid'
+require 'celluloid/autostart'
 
 require 'dmorrill10-utils/class'
 
@@ -30,7 +30,13 @@ class AcpcDealerData::PokerMatchData
   )
 
   # @returns [AcpcDealerData::PokerMatchData]
-  def self.parse_files(action_messages_file, result_messages_file, player_names, dealer_directory, num_hands=nil)
+  def self.parse_files(
+    action_messages_file,
+    result_messages_file,
+    player_names,
+    dealer_directory,
+    num_hands=nil
+  )
     parsed_action_messages = Celluloid::Future.new do
       AcpcDealerData::ActionMessages.parse_file(
         action_messages_file,
